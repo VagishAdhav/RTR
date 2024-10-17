@@ -53,7 +53,7 @@ void resize(int width, int height)
 int i = 0;
 
 float colorArray[3][3] = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
-float origin[2] = {0.0, 0.0};
+//float origin[2] = {0.0, 0.0};
 
 // The general formula for a circle centered at (h, k) with radius r is (x-h)^2 + (y-k)^2 = r^2.
 // idea is to calculate y with increments in x
@@ -61,7 +61,7 @@ float origin[2] = {0.0, 0.0};
 // y = sqrt(r^2 - (x-h)^2) - k
 void drawCircle(float radius, float* origin)
 {
-    float const STEP = 0.1;
+    float const STEP = 0.01;
     for (float angle = 0.0; angle <= 360.0; angle += STEP)
     {
         // triangle top
@@ -74,13 +74,11 @@ void drawCircle(float radius, float* origin)
         glColor3f(colorArray[1][i%3], colorArray[1][(i + 1)%3], colorArray[1][(i + 2)%3]);
         glVertex3f(x, y, 0.0f);
 
-        x += STEP; 
-
+        angle += STEP; 
+//
         x = origin[0] + (radius * cos(angle));
         y = origin[1] + (radius * sin(angle));
 
-        glColor3f(colorArray[1][i%3], colorArray[1][(i + 1)%3], colorArray[1][(i + 2)%3]);
-        glVertex3f(x, y, 0.0f);
 
         glColor3f(colorArray[2][i%3], colorArray[2][(i + 1)%3], colorArray[2][(i + 2)%3]);
         glVertex3f(x, y, 0.0f);
@@ -89,7 +87,9 @@ void drawCircle(float radius, float* origin)
 
 void display(void)
 {
+    static float origin[2] = {-1.0, 1.0};
     float new_origin[2];
+
     //code 
     glClear(GL_COLOR_BUFFER_BIT);
     glBegin(GL_TRIANGLES);
@@ -104,6 +104,14 @@ void display(void)
     new_origin[0] =  -1.0  * origin[0];
     new_origin[1] =  1.0 * origin[1];
     drawCircle(0.2, &new_origin[0]);
+
+    origin[0] += 0.01;
+    origin[1] -= 0.01;
+
+    if (origin[0] == 1.0 ) {
+        origin[0] = -1.0;
+        origin[1] = 1.0;
+    }
     glEnd();
     glutSwapBuffers();
 }
@@ -142,10 +150,10 @@ void mouse(int button, int state, int x, int y)
 
         case GLUT_LEFT_BUTTON:
             i++;
-            printf("Here are x : %d and y : %d\n",x, y);
-            origin[0] = ((float)x - 400)/400.0;
-            origin[1] = (300- (float)y)/300.0;
-            printf("Here modified x : %f and y : %f\n",origin[0] , origin[1] );
+            //printf("Here are x : %d and y : %d\n",x, y);
+            //origin[0] = ((float)x - 400)/400.0;
+            //origin[1] = (300- (float)y)/300.0;
+            //printf("Here modified x : %f and y : %f\n",origin[0] , origin[1] );
             break;
 
         default:
