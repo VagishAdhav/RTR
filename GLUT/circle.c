@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
     void keyboard(unsigned char, int, int);
     void mouse(int, int, int, int);
     void uninitialize(void);
+    void timer(int time);
 
     //code
     glutInit(&argc, argv);
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
     glutKeyboardFunc(keyboard);
     glutMouseFunc(mouse);
     glutCloseFunc(uninitialize);
+    glutTimerFunc(1, timer, 10);
 
     glutMainLoop();
 
@@ -53,7 +55,7 @@ void resize(int width, int height)
 int i = 0;
 
 float colorArray[3][3] = {{1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}};
-//float origin[2] = {0.0, 0.0};
+float origin[2] = {-1.0, 1.0};
 
 // The general formula for a circle centered at (h, k) with radius r is (x-h)^2 + (y-k)^2 = r^2.
 // idea is to calculate y with increments in x
@@ -87,7 +89,7 @@ void drawCircle(float radius, float* origin)
 
 void display(void)
 {
-    static float origin[2] = {-1.0, 1.0};
+
     float new_origin[2];
 
     //code 
@@ -105,13 +107,6 @@ void display(void)
     new_origin[1] =  1.0 * origin[1];
     drawCircle(0.2, &new_origin[0]);
 
-    origin[0] += 0.01;
-    origin[1] -= 0.01;
-
-    if (origin[0] == 1.0 ) {
-        origin[0] = -1.0;
-        origin[1] = 1.0;
-    }
     glEnd();
     glutSwapBuffers();
 }
@@ -159,6 +154,21 @@ void mouse(int button, int state, int x, int y)
         default:
             break;
     }
+}
+
+void timer(int time)
+{
+    printf("Timer\n");
+    origin[0] += 0.01;
+    origin[1] -= 0.01;
+
+    if (origin[0] >= 0.9 ) {
+        origin[0] = -1.0;
+        origin[1] = 1.0;
+    }
+
+    glutTimerFunc(1, timer, 10);
+    glutPostRedisplay();
 }
 
 void uninitialize(void)
