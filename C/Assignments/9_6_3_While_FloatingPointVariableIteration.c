@@ -3,19 +3,19 @@
 int main(void)
 {
     // variable declaration
-    float vva_f;
-    float vva_f_num = 1.7f; // change this value to get different outputs
+    float f_vva;
+    float f_vva_num_vva = 1.7f; // change this value to get different outputs
 
     //code 
     printf("\n\n");
 
-    printf("Printing Numbers %f to %f : \n\n", vva_f_num, (vva_f_num * 10.0f));
+    printf("Printing num_vvabers %f to %f : \n\n", f_vva_num_vva, (f_vva_num_vva * 10.0f));
 
-    vva_f = vva_f_num;
-    while(vva_f <= (vva_f_num * 10.0f))
+    f_vva = f_vva_num_vva;
+    while(f_vva <= (f_vva_num_vva * 10.0f))
     {
-        printf("\t%f\n", vva_f);
-        vva_f = vva_f + vva_f_num;
+        printf("\t%f\n", f_vva);
+        f_vva = f_vva + f_vva_num_vva;
     }
 
     printf("\n\n");

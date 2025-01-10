@@ -3,15 +3,15 @@
 int main(void)
 {
     // variable declaration
-    int vva_i, vva_j;
+    int i_vva, vva_j;
 
 
     // code
     printf("\n\n");
 
-    for (vva_i = 1; vva_i <=10; vva_i++)
+    for (i_vva = 1; i_vva <=10; i_vva++)
     {
-        printf("i = %d\n", vva_i);
+        printf("i = %d\n", i_vva);
         printf("-----------\n\n");
 
         for (vva_j = 1; vva_j <=5; vva_j++)

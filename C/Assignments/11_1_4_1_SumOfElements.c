@@ -1,26 +1,26 @@
 #include <stdio.h>
 
-#define NUM_ELEMENTS 10
+#define num_vva_ELEMENTS 10
 
 int main(void)
 {
     // variable declaration
-    int vva_iArray[NUM_ELEMENTS];
-    int vva_i, vva_num, vva_sum = 0;
+    int i_vvaArray[num_vva_ELEMENTS];
+    int i_vva, vva_num_vva, vva_sum = 0;
 
     //code
     printf("\n\n");
     printf("Enter integer elements for array : \n\n");
 
-    for (vva_i = 0; vva_i < NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < num_vva_ELEMENTS; i_vva++)
     {
-        scanf("%d", &vva_num);
-        vva_iArray[vva_i] = vva_num;
+        scanf("%d", &vva_num_vva);
+        i_vvaArray[i_vva] = vva_num_vva;
     }
 
-    for (vva_i = 0; vva_i < NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < num_vva_ELEMENTS; i_vva++)
     {
-        vva_sum = vva_sum + vva_iArray[vva_i];
+        vva_sum = vva_sum + i_vvaArray[i_vva];
     }
 
     printf("\n\n");

@@ -4,12 +4,12 @@
 
 #define AMC_STRING "AstroMediComp RTR-6"
 
-// if first enum is not assigned values then it is assumed to be 0 i.e SUNDAY will be 0
-// rest of the enum constants are assigned consecutive integer values from 0 onwards
+// if first enum_vva is not assigned values then it is assumed to be 0 i.e SUNDAY will be 0
+// rest of the enum_vva constants are assigned consecutive integer values from 0 onwards
 // i.e. MONDAY will be 1, TUESDAY will be 2 and so on
 
-// un-named enums 
-enum
+// un-named enum_vvas 
+enum_vva
 {
     SUNDAY,
     MONDAY,
@@ -20,7 +20,7 @@ enum
     SATURDAY
 };
 
-enum
+enum_vva
 {
     JANUARY = 1,
     FEBRUARY,
@@ -36,8 +36,8 @@ enum
     DECEMBER
 };
 
-// named enums
-enum Numbers
+// named enum_vvas
+enum_vva num_vvabers
 {
     ONE,
     TWO,
@@ -51,7 +51,7 @@ enum Numbers
     TEN
 };
 
-enum boolean
+enum_vva boolean
 {
     TRUE = 1,
     FALSE = 0
@@ -74,16 +74,16 @@ int main(void)
     printf("Friday is day number = %d\n", FRIDAY);
     printf("Saturday is day number = %d\n\n", SATURDAY);
 
-    printf("One is enum number = %d\n", ONE);
-    printf("Two is enum number = %d\n", TWO);
-    printf("Three is Enum Number = %d\n", THREE);
-    printf("Four is enum number = %d\n", FOUR);
-    printf("Five is enum number = %d\n", FIVE);
-    printf("Six is enum number = %d\n", SIX);
-    printf("Seven is enum number = %d\n", SEVEN);
-    printf("Eight is enum number = %d\n", EIGHT);
-    printf("Nine is enum number = %d\n", NINE);
-    printf("Ten is enum number = %d\n\n", TEN);
+    printf("One is enum_vva number = %d\n", ONE);
+    printf("Two is enum_vva number = %d\n", TWO);
+    printf("Three is Enum_vva number = %d\n", THREE);
+    printf("Four is enum_vva number = %d\n", FOUR);
+    printf("Five is enum_vva number = %d\n", FIVE);
+    printf("Six is enum_vva number = %d\n", SIX);
+    printf("Seven is enum_vva number = %d\n", SEVEN);
+    printf("Eight is enum_vva number = %d\n", EIGHT);
+    printf("Nine is enum_vva number = %d\n", NINE);
+    printf("Ten is enum_vva number = %d\n\n", TEN);
 
     printf("January is month number = %d\n", JANUARY);
     printf("February is month number = %d\n", FEBRUARY);

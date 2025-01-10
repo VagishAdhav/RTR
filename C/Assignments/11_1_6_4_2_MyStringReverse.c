@@ -7,26 +7,26 @@ int main(void)
     // function prototype
     void vvaStrrev(char[], char[]);
     // variable declaration
-    char vva_chArray_Original[MAX_STRING_LENGTH], vva_chArray_Reversed[MAX_STRING_LENGTH]; // a char array is string
+    char c_vvahArray_Original[MAX_STRING_LENGTH], c_vvahArray_Reversed[MAX_STRING_LENGTH]; // a char array is string
 
     // code
 
     // *** STRING INPUT ***
     printf("\n\n");
     printf("Enter a string : \n\n");
-    gets_s(vva_chArray_Original, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray_Original, MAX_STRING_LENGTH);
 
     // ** STRING REVERSE ***
-    vvaStrrev(vva_chArray_Reversed, vva_chArray_Original);
+    vvaStrrev(c_vvahArray_Reversed, c_vvahArray_Original);
 
     // *** STRING OUTPUT ****
     printf("\n\n");
-    printf("The original string enterred by you (i.e. : 'vva_chArray_Original) \n\n");
-    printf("%s\n", vva_chArray_Original);
+    printf("The original string enterred by you (i.e. : 'c_vvahArray_Original) \n\n");
+    printf("%s\n", c_vvahArray_Original);
 
     printf("\n\n");
-    printf("The reversed string (i.e. 'vva_chArray_Reversed') is : \n\n");
-    printf("%s\n", vva_chArray_Reversed);
+    printf("The reversed string (i.e. 'c_vvahArray_Reversed') is : \n\n");
+    printf("%s\n", c_vvahArray_Reversed);
 
     return (0);
 }
@@ -37,22 +37,22 @@ void vvaStrrev(char str_destination[], char str_source[])
     int vvaStrlen(char[]);
 
     //variable declaration
-    int vva_iStringLength = 0;
-    int vva_i, vva_j, vva_len;
+    int i_vvaStringLength = 0;
+    int i_vva, vva_j, vva_len;
 
     //code
-    vva_iStringLength = vvaStrlen(str_source);
+    i_vvaStringLength = vvaStrlen(str_source);
 
     // array index begin from 0 , hence last index will be length-1
-    vva_len = vva_iStringLength - 1;
+    vva_len = i_vvaStringLength - 1;
 
     // put character from last index to first index, second last index to second index and so on
-    for (vva_i = 0, vva_j = vva_len; vva_i < vva_iStringLength, vva_j >= 0; vva_i++, vva_j--)
+    for (i_vva = 0, vva_j = vva_len; i_vva < i_vvaStringLength, vva_j >= 0; i_vva++, vva_j--)
     {
-        str_destination[vva_i] = str_source[vva_j];
+        str_destination[i_vva] = str_source[vva_j];
     }
 
-    str_destination[vva_i] = '\0';
+    str_destination[i_vva] = '\0';
 
 }
 

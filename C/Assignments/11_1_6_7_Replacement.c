@@ -13,25 +13,25 @@ int main(void)
 
 
     // variable declaration
-    char vva_chArray_Original[MAX_STRING_LENGTH], vva_chArray_VowelReplaced[MAX_STRING_LENGTH]; // A character array is a string
-    int vva_iStringLength;
-    int vva_i;
+    char c_vvahArray_Original[MAX_STRING_LENGTH], c_vvahArray_VowelReplaced[MAX_STRING_LENGTH]; // A character array is a string
+    int i_vvaStringLength;
+    int i_vva;
 
     //code
 
     // **** STRING INPUT *********
     printf("\n\n");
     printf("Enter a string : \n\n");
-    gets_s(vva_chArray_Original, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray_Original, MAX_STRING_LENGTH);
 
     // ** VOWELS_REPLACE *****
-    vva_MyStrcpy(vva_chArray_VowelReplaced, vva_chArray_Original);
+    vva_MyStrcpy(c_vvahArray_VowelReplaced, c_vvahArray_Original);
     
-    vva_iStringLength = vva_MyStrlen(vva_chArray_VowelReplaced);
+    i_vvaStringLength = vva_MyStrlen(c_vvahArray_VowelReplaced);
 
-    for (vva_i = 0; vva_i < vva_iStringLength; vva_i++)
+    for (i_vva = 0; i_vva < i_vvaStringLength; i_vva++)
     {
-        switch(vva_chArray_VowelReplaced[vva_i])
+        switch(c_vvahArray_VowelReplaced[i_vva])
         {
             case 'A':
             case 'a':
@@ -43,7 +43,7 @@ int main(void)
             case 'o':
             case 'U':
             case 'u':
-                vva_chArray_VowelReplaced[vva_i] = '*';
+                c_vvahArray_VowelReplaced[i_vva] = '*';
             default:
                 break;
         }
@@ -52,11 +52,11 @@ int main(void)
     // ** STRING_OUTPUT *****
     printf("\n\n");
     printf("String entered by you is : \n\n");
-    printf("%s\n", vva_chArray_Original);
+    printf("%s\n", c_vvahArray_Original);
 
     printf("\n\n");
     printf("String after replacement of vowels by * is : \n\n");
-    printf("%s\n", vva_chArray_VowelReplaced);
+    printf("%s\n", c_vvahArray_VowelReplaced);
 
     return(0);
 }
@@ -89,12 +89,12 @@ void vva_MyStrcpy(char str_destination[], char str_source[])
     int vva_MyStrlen(char[]);
 
     // variable declaration
-    int vva_iStringLength = 0;
+    int i_vvaStringLength = 0;
     int vva_j;
 
     //code
-    vva_iStringLength = vva_MyStrlen(str_source);
-    for (vva_j = 0; vva_j < vva_iStringLength; vva_j++)
+    i_vvaStringLength = vva_MyStrlen(str_source);
+    for (vva_j = 0; vva_j < i_vvaStringLength; vva_j++)
         str_destination[vva_j] = str_source[vva_j];
 
     str_destination[vva_j] = '\0';

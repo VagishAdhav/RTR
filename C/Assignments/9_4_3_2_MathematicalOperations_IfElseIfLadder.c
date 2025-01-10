@@ -4,8 +4,8 @@
 int main(void)
 {
     // variable declaration 
-    int vva_a, vva_b;
-    int vva_result;
+    int a_vva, b_vva;
+    int result_vva;
 
     char vva_option, vva_option_division;
 
@@ -13,10 +13,10 @@ int main(void)
     printf("\n\n");
 
     printf("Enter value for 'A' : ");
-    scanf("%d", &vva_a);
+    scanf("%d", &a_vva);
 
     printf("Enter value for 'B' : ");
-    scanf("%d", &vva_b);
+    scanf("%d", &b_vva);
 
     
     printf("Enter option in character : \n\n");
@@ -32,32 +32,32 @@ int main(void)
 
     if (vva_option == 'A' || vva_option == 'a')
     {
-        vva_result = vva_a  + vva_b;
-        printf("Addition of A = %d and B = %d gives result %d !!!\n\n", vva_a, vva_b, vva_result);
+        result_vva = a_vva  + b_vva;
+        printf("Addition of A = %d and B = %d gives result %d !!!\n\n", a_vva, b_vva, result_vva);
     }
     else if (vva_option == 'S' || vva_option == 's')
     {
-        if (vva_a >= vva_b)
+        if (a_vva >= b_vva)
         {
-            vva_result = vva_a - vva_b;
-            printf("Subtraction of B = %d from A = %d gives result %d !!!\n\n", vva_b, vva_a, vva_result);
+            result_vva = a_vva - b_vva;
+            printf("Subtraction of B = %d from A = %d gives result %d !!!\n\n", b_vva, a_vva, result_vva);
         }
         else
         {
-            vva_result = vva_b - vva_a;
-            printf("Subtraction of A = %d from B = %d gives result %d !!!\n\n", vva_a, vva_b, vva_result);
+            result_vva = b_vva - a_vva;
+            printf("Subtraction of A = %d from B = %d gives result %d !!!\n\n", a_vva, b_vva, result_vva);
         }
     }
     else if (vva_option == 'M' || vva_option == 'm')
     {
-        vva_result = vva_a * vva_b;
-        printf("Multiplication of A = %d and B = %d gives result %d !!!\n\n", vva_a, vva_b, vva_result);
+        result_vva = a_vva * b_vva;
+        printf("Multiplication of A = %d and B = %d gives result %d !!!\n\n", a_vva, b_vva, result_vva);
     }
     else if (vva_option == 'D' || vva_option == 'd')
     {
         printf("Enter option in character : \n\n");
-        printf("'Q' or 'q' or '/' for quotient upon division : \n");
-        printf("'R' or 'r' '%%' for remainder upon division : \n");
+        printf("'Q' or 'q' or '/' for quotient_vva upon division : \n");
+        printf("'R' or 'r' '%%' for remainder_vva upon division : \n");
 
         printf("Enter option : ");
 
@@ -66,28 +66,28 @@ int main(void)
 
         if (vva_option_division == 'Q' || vva_option_division == 'q' || vva_option_division == '/')
         {
-            if (vva_a >= vva_b)
+            if (a_vva >= b_vva)
             {
-                vva_result = vva_a / vva_b;
-                printf("Division of A = %d by B = %d gives quotient = %d !!! \n\n", vva_a, vva_b, vva_result);
+                result_vva = a_vva / b_vva;
+                printf("Division of A = %d by B = %d gives quotient_vva = %d !!! \n\n", a_vva, b_vva, result_vva);
             }
             else
             {
-                vva_result = vva_b / vva_a;
-                printf("Division of B = %d by A = %d gives quotient = %d !!! \n\n", vva_b, vva_a, vva_result);
+                result_vva = b_vva / a_vva;
+                printf("Division of B = %d by A = %d gives quotient_vva = %d !!! \n\n", b_vva, a_vva, result_vva);
             }
         }
         else if (vva_option_division == 'R' || vva_option_division == 'r' || vva_option_division == '%')
         {
-            if (vva_a >= vva_b)
+            if (a_vva >= b_vva)
             {
-                vva_result = vva_a % vva_b;
-                printf("Division of A = %d by B = %d gives remainder = %d !!!\n\n", vva_a, vva_b, vva_result);
+                result_vva = a_vva % b_vva;
+                printf("Division of A = %d by B = %d gives remainder_vva = %d !!!\n\n", a_vva, b_vva, result_vva);
             }
             else
             {
-                vva_result = vva_b % vva_a;
-                printf("Division of B = %d by A = %d gives remainder = %d !!! \n\n", vva_b, vva_a, vva_result);
+                result_vva = b_vva % a_vva;
+                printf("Division of B = %d by A = %d gives remainder_vva = %d !!! \n\n", b_vva, a_vva, result_vva);
             }
         }
         else

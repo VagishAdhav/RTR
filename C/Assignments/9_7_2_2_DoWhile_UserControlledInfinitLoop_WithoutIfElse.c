@@ -3,7 +3,7 @@
 int main(void)
 {
     // variable declaration
-    char vva_option, vva_ch = '\0';
+    char vva_option, c_vvah = '\0';
 
     //code
     printf("\n\n");
@@ -20,8 +20,8 @@ int main(void)
         {
             printf("\n");
             printf("In loop ....\n");
-            vva_ch = getch();  // wait for character inout
-        }while (vva_ch != 'Q' && vva_ch != 'q');
+            c_vvah = getch();  // wait for character inout
+        }while (c_vvah != 'Q' && c_vvah != 'q');
 
         printf("\n\n");
         printf("EXISTING USER CONTROLLED INFINITE LOOP...");

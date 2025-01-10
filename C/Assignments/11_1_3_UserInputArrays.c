@@ -5,61 +5,61 @@
 // FOLLOWING THREE GLOBAL MACRO CONST VALUES, BEFORE COMPILING, LINKING AND EXECUTING THE PROGRAM !!!
 
 
-#define INT_ARRAY_NUM_ELEMENTS 5
-#define FLOAT_ARRAY_NUM_ELEMENTS 3
-#define CHAR_ARRAY_NUM_ELEMENTS 15
+#define INT_ARRAY_num_vva_ELEMENTS 5
+#define FLOAT_ARRAY_num_vva_ELEMENTS 3
+#define CHAR_ARRAY_num_vva_ELEMENTS 15
 
 int main(void)
 {
     // variable declaration 
-    int vva_iArray[INT_ARRAY_NUM_ELEMENTS];
-    float vva_fArray[FLOAT_ARRAY_NUM_ELEMENTS];
-    char vva_cArray[CHAR_ARRAY_NUM_ELEMENTS];
-    int vva_i, vva_num;
+    int i_vvaArray[INT_ARRAY_num_vva_ELEMENTS];
+    float f_vvaArray[FLOAT_ARRAY_num_vva_ELEMENTS];
+    char c_vvaArray[CHAR_ARRAY_num_vva_ELEMENTS];
+    int i_vva, vva_num_vva;
 
     // code 
     // *** Array elements input ****
     printf("\n\n");
     printf("Enter elements for 'integer' array : \n");
-    for (vva_i = 0; vva_i < INT_ARRAY_NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < INT_ARRAY_num_vva_ELEMENTS; i_vva++)
     {
-        scanf("%d", &vva_iArray[vva_i]);
+        scanf("%d", &i_vvaArray[i_vva]);
     }
 
     printf("\n\n");
     printf("Enter elements for 'floating point' array : \n");
-    for (vva_i = 0; vva_i < FLOAT_ARRAY_NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < FLOAT_ARRAY_num_vva_ELEMENTS; i_vva++)
     {
-        scanf("%f", &vva_fArray[vva_i]);
+        scanf("%f", &f_vvaArray[i_vva]);
     }
 
     printf("\n\n");
     printf("Enter elements for 'character' array : \n");
-    for (vva_i = 0; vva_i < CHAR_ARRAY_NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < CHAR_ARRAY_num_vva_ELEMENTS; i_vva++)
     {
-        scanf("%c", &vva_cArray[vva_i]);
+        scanf("%c", &c_vvaArray[i_vva]);
     }
 
 
     // *** Array elements output
     printf("Integer array entered by you: \n\n");
-    for (vva_i = 0; vva_i < INT_ARRAY_NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < INT_ARRAY_num_vva_ELEMENTS; i_vva++)
     {
-        printf("%d\n", vva_iArray[vva_i]);
+        printf("%d\n", i_vvaArray[i_vva]);
     }
 
     printf("\n\n");
     printf("Floating-point array entered by you: : \n");
-    for (vva_i = 0; vva_i < FLOAT_ARRAY_NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < FLOAT_ARRAY_num_vva_ELEMENTS; i_vva++)
     {
-        printf("%f\n", vva_fArray[vva_i]);
+        printf("%f\n", f_vvaArray[i_vva]);
     }
 
     printf("\n\n");
     printf("Character array entered by you: : \n");
-    for (vva_i = 0; vva_i < CHAR_ARRAY_NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < CHAR_ARRAY_num_vva_ELEMENTS; i_vva++)
     {
-        printf("%c\n", vva_cArray[vva_i]);
+        printf("%c\n", c_vvaArray[i_vva]);
     }
 
     return (0);

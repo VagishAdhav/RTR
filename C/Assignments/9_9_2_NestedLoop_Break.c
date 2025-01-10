@@ -4,12 +4,12 @@
 int main(void)
 {
     // variable declaration
-    int vva_i, vva_j;
+    int i_vva, vva_j;
 
     //code
     printf("\n\n");
 
-    for (vva_i = 1; vva_i <= 20; vva_i++)
+    for (i_vva = 1; i_vva <= 20; i_vva++)
     {
         for (vva_j = 1; vva_j <= 20; vva_j++)
         {

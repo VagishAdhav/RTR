@@ -5,15 +5,15 @@
 int main(int argc, char *argv[], char *envp[])
 {
     //variable declarations
-    int vva_i;
-    int vva_num;
+    int i_vva;
+    int vva_num_vva;
     int vva_sum = 0;
 
     //code 
     if (argc == 1)
     {
         printf("\n\n");
-        printf("No numbers given for addition !!! Exiting now ...\n\n");
+        printf("No num_vvabers given for addition !!! Exiting now ...\n\n");
         printf("Usage: 10_1_6_1_CommandLineArgumentApplication.exe <first number> <second number> \n\n");
         exit (0);
     }
@@ -23,10 +23,10 @@ int main(int argc, char *argv[], char *envp[])
     printf("\n\n");
     printf("Sum of all integer command line arguments is: \n\n");
     // argument at index 0 is name of the executable so ignore it
-    for ( vva_i = 1; vva_i < argc; vva_i++)
+    for ( i_vva = 1; i_vva < argc; i_vva++)
     {
-        vva_num = atoi(argv[vva_i]);
-        vva_sum = vva_sum + vva_num;
+        vva_num_vva = atoi(argv[i_vva]);
+        vva_sum = vva_sum + vva_num_vva;
     }
 
     printf("Sum = %d \n\n", vva_sum);

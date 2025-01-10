@@ -2,10 +2,10 @@
 
 int main(void)
 {
-   int vva_index = 0;
-   while(vva_index < 10)
+   int i_vvandex = 0;
+   while(i_vvandex < 10)
    {
-        printf("%d \t", ++vva_index);
+        printf("%d \t", ++i_vvandex);
    }
    return (0);
 }

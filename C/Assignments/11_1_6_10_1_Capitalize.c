@@ -9,51 +9,51 @@ int main(void)
     int vva_MyStrlen(char[]);
 
     // variable declaration
-    char vva_chArray[MAX_STRING_LENGTH], vva_chArray_CapitalFirstLetterOfEveryWord[MAX_STRING_LENGTH]; // character array is a string
-    int vva_iStringLength;
-    int vva_i, vva_j;
+    char c_vvahArray[MAX_STRING_LENGTH], c_vvahArray_CapitalFirstLetterOfEveryWord[MAX_STRING_LENGTH]; // character array is a string
+    int i_vvaStringLength;
+    int i_vva, vva_j;
 
     // code
     // ** STRING INPUT ** 
     printf("\n\n");
     printf("Enter a string : \n\n");
-    gets_s(vva_chArray, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray, MAX_STRING_LENGTH);
 
-    vva_iStringLength = vva_MyStrlen(vva_chArray);
+    i_vvaStringLength = vva_MyStrlen(c_vvahArray);
     vva_j = 0;
-    for (vva_i = 0; vva_i < vva_iStringLength; vva_i++)
+    for (i_vva = 0; i_vva < i_vvaStringLength; i_vva++)
     {
-        if (vva_i == 0)
+        if (i_vva == 0)
         {
-            vva_chArray_CapitalFirstLetterOfEveryWord[vva_j] = toupper(vva_chArray[vva_i]);
+            c_vvahArray_CapitalFirstLetterOfEveryWord[vva_j] = toupper(c_vvahArray[i_vva]);
         }
-        else if (vva_chArray[vva_i] == ' ')
+        else if (c_vvahArray[i_vva] == ' ')
         {
-            vva_chArray_CapitalFirstLetterOfEveryWord[vva_j] = vva_chArray[vva_i];
-            vva_chArray_CapitalFirstLetterOfEveryWord[vva_j + 1] = toupper(vva_chArray[vva_i + 1]);
+            c_vvahArray_CapitalFirstLetterOfEveryWord[vva_j] = c_vvahArray[i_vva];
+            c_vvahArray_CapitalFirstLetterOfEveryWord[vva_j + 1] = toupper(c_vvahArray[i_vva + 1]);
 
-            // since already teo characters copied in this block , are extra incrementing vva_i and vva_j by 1
-            vva_i++;
+            // since already teo characters copied in this block , are extra incrementing i_vva and vva_j by 1
+            i_vva++;
             vva_j++;
         }
         else
         {
-            vva_chArray_CapitalFirstLetterOfEveryWord[vva_j] = vva_chArray[vva_i];
+            c_vvahArray_CapitalFirstLetterOfEveryWord[vva_j] = c_vvahArray[i_vva];
         }
         vva_j++;
     }
 
-    vva_chArray_CapitalFirstLetterOfEveryWord[vva_j] = '\0';
+    c_vvahArray_CapitalFirstLetterOfEveryWord[vva_j] = '\0';
 
     
     // ** STRING OUTPUT ****
     printf("\n\n");
     printf("String entered by you is: \n\n");
-    printf("%s\n", vva_chArray);
+    printf("%s\n", c_vvahArray);
 
     printf("\n\n");
     printf("String after capitalizing first letter of every world is : \n\n");
-    printf("%s\n", vva_chArray_CapitalFirstLetterOfEveryWord);
+    printf("%s\n", c_vvahArray_CapitalFirstLetterOfEveryWord);
 
     return (0);
 }

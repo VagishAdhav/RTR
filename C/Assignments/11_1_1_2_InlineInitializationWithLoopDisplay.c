@@ -3,79 +3,79 @@
 int main(void)
 {
     // variable declarations
-    int vva_iArray[] = {9, 30, 6, 12, 98, 20, 23, 2, 45};
-    int vva_int_size;
-    int vva_iArray_size;
-    int vva_iArray_num_elements;
+    int i_vvaArray[] = {9, 30, 6, 12, 98, 20, 23, 2, 45};
+    int i_vvant_size;
+    int i_vvaArray_size;
+    int i_vvaArray_num_vva_elements;
 
-    float vva_fArray[] = {1.2f, 2.3f, 3.4f, 4.5f, 5.6f, 6.7f, 7.8f, 8.9f};
-    int vva_float_size;
-    int vva_fArray_size;
-    int vva_fArray_num_elements;
+    float f_vvaArray[] = {1.2f, 2.3f, 3.4f, 4.5f, 5.6f, 6.7f, 7.8f, 8.9f};
+    int f_vvaloat_size;
+    int f_vvaArray_size;
+    int f_vvaArray_num_vva_elements;
 
-    char vva_cArray[] = {'A', 'S', 'T', 'R', 'O', 'M', 'E', 'D', 'I', 'C', 'O', 'M', 'P'};
-    int vva_char_size;
-    int vva_cArray_size;
-    int vva_cArray_num_elements;
+    char c_vvaArray[] = {'A', 'S', 'T', 'R', 'O', 'M', 'E', 'D', 'I', 'C', 'O', 'M', 'P'};
+    int c_vvahar_size;
+    int c_vvaArray_size;
+    int c_vvaArray_num_vva_elements;
 
-    int vva_index;
+    int i_vvandex;
 
     //code
-    //**** vva_iArray[] ********
+    //**** i_vvaArray[] ********
     printf("\n\n");
-    printf("In-line initialization and loop (for) display of elements of array 'vva_iArrayp[]' : \n\n");
+    printf("In-line initialization and loop (for) display of elements of array 'i_vvaArrayp[]' : \n\n");
 
-    vva_int_size = sizeof(int);
-    vva_iArray_size = sizeof(vva_iArray);
-    vva_iArray_num_elements = vva_iArray_size / vva_int_size;
+    i_vvant_size = sizeof(int);
+    i_vvaArray_size = sizeof(i_vvaArray);
+    i_vvaArray_num_vva_elements = i_vvaArray_size / i_vvant_size;
 
-    for (vva_index = 0; vva_index < vva_iArray_num_elements; vva_index++)
+    for (i_vvandex = 0; i_vvandex < i_vvaArray_num_vva_elements; i_vvandex++)
     {
-        printf("vva_iArray[%d] (Element %d) = %d\n", vva_index, (vva_index + 1), vva_iArray[vva_index]);
+        printf("i_vvaArray[%d] (Element %d) = %d\n", i_vvandex, (i_vvandex + 1), i_vvaArray[i_vvandex]);
     }
 
-    printf("Size of data type 'int'                               = %d bytes\n", vva_int_size);
-    printf("Number of elements in 'int' Array 'vva_iArray[]'      = %d elements\n", vva_iArray_num_elements);
-    printf("Size of array 'vva_iArray[]' (%d Elements * %d bytes) = %d bytes\n\n", vva_iArray_num_elements, vva_int_size, vva_iArray_size);
+    printf("Size of data type 'int'                               = %d bytes\n", i_vvant_size);
+    printf("number of elements in 'int' Array 'i_vvaArray[]'      = %d elements\n", i_vvaArray_num_vva_elements);
+    printf("Size of array 'i_vvaArray[]' (%d Elements * %d bytes) = %d bytes\n\n", i_vvaArray_num_vva_elements, i_vvant_size, i_vvaArray_size);
 
-    //**** vva_fArray[] ********
+    //**** f_vvaArray[] ********
     printf("\n\n");
-    printf("In-line initialization and loop (while) display of elements of array 'vva_fArrayp[]' : \n\n");
+    printf("In-line initialization and loop (while) display of elements of array 'f_vvaArrayp[]' : \n\n");
 
     
-    vva_float_size = sizeof(float);
-    vva_fArray_size = sizeof(vva_fArray);
-    vva_fArray_num_elements = vva_fArray_size / vva_float_size;
+    f_vvaloat_size = sizeof(float);
+    f_vvaArray_size = sizeof(f_vvaArray);
+    f_vvaArray_num_vva_elements = f_vvaArray_size / f_vvaloat_size;
 
-    vva_index = 0;
+    i_vvandex = 0;
 
-    while (vva_index < vva_fArray_num_elements)
+    while (i_vvandex < f_vvaArray_num_vva_elements)
     {
-        printf("vva_fArray[%d] (Element %d) = %f\n", vva_index, (vva_index + 1), vva_fArray[vva_index]);
-        vva_index++;
+        printf("f_vvaArray[%d] (Element %d) = %f\n", i_vvandex, (i_vvandex + 1), f_vvaArray[i_vvandex]);
+        i_vvandex++;
     }
 
-    printf("Size of data type 'float'                            = %d bytes\n", vva_float_size);
-    printf("Number of elements in 'float' Array 'vva_fArray[]'   = %d elements\n", vva_fArray_num_elements);
-    printf("Size of array 'vva_fArray[]' (%d Elements * %d bytes) = %d bytes\n\n", vva_fArray_num_elements, vva_float_size, vva_fArray_size);
+    printf("Size of data type 'float'                            = %d bytes\n", f_vvaloat_size);
+    printf("number of elements in 'float' Array 'f_vvaArray[]'   = %d elements\n", f_vvaArray_num_vva_elements);
+    printf("Size of array 'f_vvaArray[]' (%d Elements * %d bytes) = %d bytes\n\n", f_vvaArray_num_vva_elements, f_vvaloat_size, f_vvaArray_size);
 
 
-    // ************** vva_cArray[] ***************
+    // ************** c_vvaArray[] ***************
     printf("\n\n");
-    printf("Inline initialisation and loop (for) display of elements of array vva_cArray[] : \n\n");
+    printf("Inline initialisation and loop (for) display of elements of array c_vvaArray[] : \n\n");
 
-    vva_char_size = sizeof(char);
-    vva_cArray_size = sizeof(vva_cArray);
-    vva_cArray_num_elements = vva_cArray_size / vva_char_size;
+    c_vvahar_size = sizeof(char);
+    c_vvaArray_size = sizeof(c_vvaArray);
+    c_vvaArray_num_vva_elements = c_vvaArray_size / c_vvahar_size;
 
-    for (vva_index = 0; vva_index < vva_cArray_num_elements; vva_index++)
+    for (i_vvandex = 0; i_vvandex < c_vvaArray_num_vva_elements; i_vvandex++)
     {
-        printf("vva_cArray[%d] (Element %d) = %c\n", vva_index, (vva_index + 1), vva_cArray[vva_index]);
+        printf("c_vvaArray[%d] (Element %d) = %c\n", i_vvandex, (i_vvandex + 1), c_vvaArray[i_vvandex]);
     }
 
-    printf("Size of data type 'char'                              = %d bytes\n", vva_char_size);
-    printf("Number of elements in 'char' Array 'vva_cArray[]'     = %d elements\n", vva_cArray_num_elements);
-    printf("Size of array 'vva_cArray[]' (%d Elements * %d bytes) = %d bytes\n\n", vva_cArray_num_elements, vva_char_size, vva_cArray_size);
+    printf("Size of data type 'char'                              = %d bytes\n", c_vvahar_size);
+    printf("number of elements in 'char' Array 'c_vvaArray[]'     = %d elements\n", c_vvaArray_num_vva_elements);
+    printf("Size of array 'c_vvaArray[]' (%d Elements * %d bytes) = %d bytes\n\n", c_vvaArray_num_vva_elements, c_vvahar_size, c_vvaArray_size);
 
     return (0);
 }

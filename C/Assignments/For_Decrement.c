@@ -2,8 +2,8 @@
 
 int main(void)
 {
-    for (int vva_index = 10; vva_index > 0; vva_index--)
+    for (int i_vvandex = 10; i_vvandex > 0; i_vvandex--)
     {
-        printf("%d \t", vva_index);
+        printf("%d \t", i_vvandex);
     }
 }

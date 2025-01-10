@@ -7,20 +7,20 @@ int main(int argc, char *argv[], char *envp[])
     void MyAddition(int, int);
 
     // variable declaration : local variable to main()
-    int vva_a, vva_b;
+    int a_vva, b_vva;
 
     // code
     printf("\n\n");
     printf("Enter integer value for 'A' : " );
-    scanf("%d", &vva_a);
+    scanf("%d", &a_vva);
 
     printf("\n\n");
     printf("Enter Integer value for 'B' : ");
-    scanf("%d", &vva_b);
+    scanf("%d", &b_vva);
 
 
     // code 
-    MyAddition(vva_a, vva_b); // function call
+    MyAddition(a_vva, b_vva); // function call
 
     return (0);
 }
@@ -28,15 +28,15 @@ int main(int argc, char *argv[], char *envp[])
 //************** User defined function : Method of definition 2********
 // *********** Valid (int) return value , no parameters **************
 
-void MyAddition(int vva_a, int vva_b) // function definition
+void MyAddition(int a_vva, int b_vva) // function definition
 {
     // variable declaration : local variables to MyAddition()
     int vva_sum;
 
     // code
-    vva_sum = vva_a + vva_b;
+    vva_sum = a_vva + b_vva;
 
     
     printf("\n\n");
-    printf("Sum of %d and %d = %d\n\n", vva_a, vva_b, vva_sum);
+    printf("Sum of %d and %d = %d\n\n", a_vva, b_vva, vva_sum);
 }

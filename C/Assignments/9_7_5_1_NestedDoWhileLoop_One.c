@@ -3,16 +3,16 @@
 int main(void)
 {
     //variable declaration
-    int vva_i , vva_j;
+    int i_vva , vva_j;
 
     //code
     printf("\n\n");
 
-    vva_i = 1;
+    i_vva = 1;
 
     do
     {
-        printf("i = %d \n", vva_i);
+        printf("i = %d \n", i_vva);
         printf("-------------\n\n");
 
         vva_j = 1;
@@ -22,9 +22,9 @@ int main(void)
             vva_j++;
         }while(vva_j <= 5);
 
-        vva_i++;
+        i_vva++;
         printf("\n\n");
-    }while(vva_i <= 10);
+    }while(i_vva <= 10);
 
     return (0);
 }

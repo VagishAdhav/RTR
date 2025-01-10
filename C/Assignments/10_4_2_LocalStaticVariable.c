@@ -9,14 +9,14 @@ int main(void)
     // variable declarations
     // 'a is a local variable, it is local to main() only
 
-    int vva_a = 5;
+    int a_vva = 5;
 
     // function prototypes
     void change_count(void);
 
     //code
     printf("\n");
-    printf("A = %d\n\n", vva_a);
+    printf("A = %d\n\n", a_vva);
 
     // vva_local_count is initialised to 0
     // vva_local_count = vva_local_count + 1 = 0 + 1 = 1

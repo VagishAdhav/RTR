@@ -4,20 +4,20 @@
 int main(void)
 {
     // variable declaration
-    int vva_i;
-    char vva_ch;
+    int i_vva;
+    char c_vvah;
 
     //code
     printf("\n\n");
 
-    printf("Printing even numbers from 1 to 100 for every user input. Existing the loop when user enters characters 'Q' or 'q' : \n\n");
+    printf("Printing even num_vvabers from 1 to 100 for every user input. Existing the loop when user enters characters 'Q' or 'q' : \n\n");
     printf("Enter character 'Q' or 'q' to exit loop : \n\n");
 
-    for (vva_i = 1; vva_i <= 100; vva_i++)
+    for (i_vva = 1; i_vva <= 100; i_vva++)
     {
-        printf("\t%d\n", vva_i);
-        vva_ch = getch();
-        if (vva_ch == 'Q' || vva_ch == 'q')
+        printf("\t%d\n", i_vva);
+        c_vvah = getch();
+        if (c_vvah == 'Q' || c_vvah == 'q')
         {
             break;
         }

@@ -18,21 +18,21 @@ int main(int argc, char *argv, char *envp[])
 void MyAddition(void)  // function definition
 {
     // variable declaration : local variables to MyAddition()
-    int vva_a, vva_b, vva_sum;
+    int a_vva, b_vva, vva_sum;
 
     //code
     printf("\n\n");
     printf("Enter integer value for 'A' : " );
-    scanf("%d", &vva_a);
+    scanf("%d", &a_vva);
 
     printf("\n\n");
     printf("Enter integer value for 'B' : " );
-    scanf("%d", &vva_b);
+    scanf("%d", &b_vva);
 
-    vva_sum = vva_a + vva_b;
+    vva_sum = a_vva + b_vva;
 
     printf("\n\n");
 
-    printf("Sum of %d and %d = %d \n\n", vva_a, vva_b, vva_sum);
+    printf("Sum of %d and %d = %d \n\n", a_vva, b_vva, vva_sum);
 
 }

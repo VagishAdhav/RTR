@@ -3,59 +3,59 @@
 int main(void)
 {
     //function prototypes
-    void PrintBinaryFormOfNumber(unsigned int);
+    void PrintBinaryFormOfnumber_vva(unsigned int);
 
     // variable declaration
-    unsigned int vva_a;
-    unsigned int vva_b;
-    unsigned int vva_result;
+    unsigned int a_vva;
+    unsigned int b_vva;
+    unsigned int result_vva;
 
     //code 
     printf("\n\n");
     printf("Enter an integer = ");
-    scanf("%u", &vva_a);
+    scanf("%u", &a_vva);
 
     printf("\n\n");
     printf("Enter another integer = ");
-    scanf("%u", &vva_b);
+    scanf("%u", &b_vva);
 
     printf("\n\n\n\n");
-    vva_result = vva_a & vva_b;
+    result_vva = a_vva & b_vva;
 
-    printf("Bitwise AND of \nA = %d (Decimal) and B = %d (Decimal) gives result %d (Decimal). \n\n", vva_a, vva_b, vva_result);
+    printf("Bitwise AND of \nA = %d (Decimal) and B = %d (Decimal) gives result %d (Decimal). \n\n", a_vva, b_vva, result_vva);
 
-    PrintBinaryFormOfNumber(vva_a);
-    PrintBinaryFormOfNumber(vva_b);
-    PrintBinaryFormOfNumber(vva_result);
+    PrintBinaryFormOfnumber_vva(a_vva);
+    PrintBinaryFormOfnumber_vva(b_vva);
+    PrintBinaryFormOfnumber_vva(result_vva);
 
     return (0);
 }
 
-void PrintBinaryFormOfNumber(unsigned int vva_decimal_number)
+void PrintBinaryFormOfnumber_vva(unsigned int d_vvaecimal_num_vvaber)
 {
-    unsigned int vva_quotient, vva_remainder;
-    unsigned int vva_num;
-    unsigned int vva_binary_array[8];
-    int vva_i;
+    unsigned int vva_quotient_vva, vva_remainder_vva;
+    unsigned int vva_num_vva;
+    unsigned int binary_array_vva[8];
+    int i_vva;
     
     //code
-    for (vva_i = 0; vva_i < 8; vva_i++)
-        vva_binary_array[vva_i] = 0;
+    for (i_vva = 0; i_vva < 8; i_vva++)
+        binary_array_vva[i_vva] = 0;
 
-    printf("The binary form of the decimal integer %d is \t=\t", vva_decimal_number);
-    vva_num = vva_decimal_number;
-    vva_i = 7;
-    while (vva_num != 0)
+    printf("The binary form of the decimal integer %d is \t=\t", d_vvaecimal_num_vvaber);
+    vva_num_vva = d_vvaecimal_num_vvaber;
+    i_vva = 7;
+    while (vva_num_vva != 0)
     {
-        vva_quotient = vva_num /2;
-        vva_remainder = vva_num % 2;
-        vva_binary_array[vva_i] = vva_remainder;
-        vva_num = vva_quotient;
-        vva_i--;
+        vva_quotient_vva = vva_num_vva /2;
+        vva_remainder_vva = vva_num_vva % 2;
+        binary_array_vva[i_vva] = vva_remainder_vva;
+        vva_num_vva = vva_quotient_vva;
+        i_vva--;
     }
 
-    for (vva_i = 0; vva_i < 8; vva_i++)
-        printf("%u", vva_binary_array[vva_i]);
+    for (i_vva = 0; i_vva < 8; i_vva++)
+        printf("%u", binary_array_vva[i_vva]);
 
     printf("\n\n");
 }

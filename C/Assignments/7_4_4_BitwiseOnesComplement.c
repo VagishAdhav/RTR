@@ -3,50 +3,50 @@
 int main(void)
 {
     //function prototypes 
-    void PrintBinaryFormOfNumber(unsigned int);
+    void PrintBinaryFormOfnumber_vva(unsigned int);
 
     //variable declarations
-    unsigned int vva_a;
-    unsigned int vva_result;
+    unsigned int a_vva;
+    unsigned int result_vva;
 
     //code
     printf("\n\n");
     printf("Enter an integer = ");
-    scanf("%u", &vva_a);
+    scanf("%u", &a_vva);
 
     printf("\n\n\n\n");
-    vva_result = ~vva_a;
-    printf("Bitwise Complementing of \nA = %d (Decimal) gives result %d (Decimal). \n\n", vva_a, vva_result);
-    PrintBinaryFormOfNumber(vva_a);
-    PrintBinaryFormOfNumber(vva_result);
+    result_vva = ~a_vva;
+    printf("Bitwise Complementing of \nA = %d (Decimal) gives result %d (Decimal). \n\n", a_vva, result_vva);
+    PrintBinaryFormOfnumber_vva(a_vva);
+    PrintBinaryFormOfnumber_vva(result_vva);
 
     return (0);
 }
 
-void PrintBinaryFormOfNumber(unsigned int decimal_number)
+void PrintBinaryFormOfnumber_vva(unsigned int decimal_num_vvaber)
 {
     //variable declaration
-    unsigned int quotient, remainder;
-    unsigned int num;
-    unsigned int binary_array[8];
+    unsigned int quotient_vva, remainder_vva;
+    unsigned int num_vva;
+    unsigned int binary_array_vva[8];
     int i;
     for (i = 0; i < 8; i++)
-        binary_array[i] = 0;
+        binary_array_vva[i] = 0;
 
-    printf("The binary form of decimal integer is %d \t=\t", decimal_number);
-    num = decimal_number;
+    printf("The binary form of decimal integer is %d \t=\t", decimal_num_vvaber);
+    num_vva = decimal_num_vvaber;
     i = 7;
-    while (num != 0)
+    while (num_vva != 0)
     {
-        quotient = num /2;
-        remainder = num % 2;
-        binary_array[i] = remainder;
-        num = quotient;
+        quotient_vva = num_vva /2;
+        remainder_vva = num_vva % 2;
+        binary_array_vva[i] = remainder_vva;
+        num_vva = quotient_vva;
         i--;
     }
 
     for (i = 0; i < 8; i++)
-        printf("%u", binary_array[i]);
+        printf("%u", binary_array_vva[i]);
 
     printf("\n\n");
 }

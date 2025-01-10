@@ -5,26 +5,26 @@
 int main(void)
 {
     // variable declarations
-    char vva_chArray_Original[MAX_STRING_LENGTH], vva_chArray_Copy[MAX_STRING_LENGTH]; //char array is string
+    char c_vvahArray_Original[MAX_STRING_LENGTH], c_vvahArray_Copy[MAX_STRING_LENGTH]; //char array is string
 
     //code 
 
     // *** STRING INPUT ***
     printf("\n\n");
     printf("Enter a string : \n\n");
-    gets_s(vva_chArray_Original, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray_Original, MAX_STRING_LENGTH);
 
     // *** STRING COPY ****
-    strcpy(vva_chArray_Copy, vva_chArray_Original);
+    strcpy(c_vvahArray_Copy, c_vvahArray_Original);
 
     // ** STRING OUTPUT ***
     printf("\n\n");
-    printf("Original string entered by you (i.e. : 'vva_chaArray_Original[]') is : \n\n");
-    printf("%s\n", vva_chArray_Original);
+    printf("Original string entered by you (i.e. : 'c_vvahaArray_Original[]') is : \n\n");
+    printf("%s\n", c_vvahArray_Original);
 
     printf("\n\n");
-    printf("The copied string (i.e. : 'vva_chArray_Copy[]') is : \n\n");
-    printf("%s\n", vva_chArray_Copy);
+    printf("The copied string (i.e. : 'c_vvahArray_Copy[]') is : \n\n");
+    printf("%s\n", c_vvahArray_Copy);
 
     return(0);
 }

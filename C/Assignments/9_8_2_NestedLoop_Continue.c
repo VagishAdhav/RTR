@@ -3,7 +3,7 @@
 int main(void)
 {
     // variable declaration
-    int vva_i, vva_j;
+    int i_vva, vva_j;
 
     //code
     printf("\n\n");
@@ -11,14 +11,14 @@ int main(void)
     printf("Outer loop prints odd number between 1 to 10 \n\n");
     printf("Outer loop prints even number between 1 to 10 for every even number printed by outer loop \n\n");
 
-    //condition for a number to be even number - division of number by 2 leaves no remainder ( remainder = 0)
-    //condition for a number to be odd number - division of number by 2 leaves remainder 1 (usually)
+    //condition for a number to be even number - division of number by 2 leaves no remainder_vva ( remainder_vva = 0)
+    //condition for a number to be odd number - division of number by 2 leaves remainder_vva 1 (usually)
 
-    for (vva_i = 1; vva_i <= 10; vva_i++)
+    for (i_vva = 1; i_vva <= 10; i_vva++)
     {
-        if (vva_i % 2 != 0) // if number vva_i is ODD
+        if (i_vva % 2 != 0) // if number i_vva is ODD
         {
-            printf("vva_i = %d\n", vva_i);
+            printf("i_vva = %d\n", i_vva);
             printf("----------------------\n");
             for (vva_j = 1; vva_j <= 10; vva_j++)
             {

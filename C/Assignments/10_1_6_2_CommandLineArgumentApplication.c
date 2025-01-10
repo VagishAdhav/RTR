@@ -2,14 +2,14 @@
 #include <stdlib.h> // 'stdlib.h contains declaration of 'exit()'
 
 
-int main(int vva_argc , char *vva_argv[], char *vva_envp[])
+int main(int a_vvargc , char *a_vvargv[], char *vva_envp[])
 {
     // variable declaration 
-    int vva_i;
+    int i_vva;
 
     //code
     // 4 command line arguments required, program name + first name + middle name + surname
-    if (vva_argc != 4)
+    if (a_vvargc != 4)
     {   
         printf("\n\n");
         printf("Invalid usage !!! exiting now ..\n\n");
@@ -21,10 +21,10 @@ int main(int vva_argc , char *vva_argv[], char *vva_envp[])
     printf("\n\n");
 
     printf("Your full name is : ");
-    // loop starts from  1 as first index (vva_argv[0]) will give name of the program itself
-    for (vva_i = 1; vva_i < vva_argc; vva_i++)
+    // loop starts from  1 as first index (a_vvargv[0]) will give name of the program itself
+    for (i_vva = 1; i_vva < a_vvargc; i_vva++)
     {
-        printf("%s ", vva_argv[vva_i]);
+        printf("%s ", a_vvargv[i_vva]);
     }
 
     printf("\n\n");

@@ -8,39 +8,39 @@ int main(void)
     int vva_MyStrlen(char[]);
 
     // variable declaration
-    char vva_chArray[MAX_STRING_LENGTH], vva_chArray_SpacesRemoved[MAX_STRING_LENGTH]; // A character array is a string
-    int vva_iStringLength;
-    int vva_i, vva_j;
+    char c_vvahArray[MAX_STRING_LENGTH], c_vvahArray_SpacesRemoved[MAX_STRING_LENGTH]; // A character array is a string
+    int i_vvaStringLength;
+    int i_vva, vva_j;
 
     //code
 
     // *** STRING_OUTPUT ****
     printf("\n\n");
     printf("Enter a string : \n\n");
-    gets_s(vva_chArray, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray, MAX_STRING_LENGTH);
 
-    vva_iStringLength = vva_MyStrlen(vva_chArray);
+    i_vvaStringLength = vva_MyStrlen(c_vvahArray);
     vva_j = 0;
-    for (vva_i = 0; vva_i < vva_iStringLength; vva_i++)
+    for (i_vva = 0; i_vva < i_vvaStringLength; i_vva++)
     {
-        if (vva_chArray[vva_i] == ' ')
+        if (c_vvahArray[i_vva] == ' ')
             continue;
         else{
-            vva_chArray_SpacesRemoved[vva_j] = vva_chArray[vva_i];
+            c_vvahArray_SpacesRemoved[vva_j] = c_vvahArray[i_vva];
             vva_j++;
         }
     }
 
-    vva_chArray_SpacesRemoved[vva_j] = '\0';
+    c_vvahArray_SpacesRemoved[vva_j] = '\0';
 
     // ** STRING OUTPUT ****
     printf("\n\n");
     printf("String entered by you is: \n\n");
-    printf("%s\n", vva_chArray);
+    printf("%s\n", c_vvahArray);
 
     printf("\n\n");
     printf("String after removal of space is : \n\n");
-    printf("%s\n", vva_chArray_SpacesRemoved);
+    printf("%s\n", c_vvahArray_SpacesRemoved);
 
     return (0);
 }

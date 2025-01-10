@@ -8,41 +8,41 @@ int main(void)
     void vvaStrcat(char[], char[]);
 
     // variable declarations
-    char vva_chArray_One[MAX_STRING_LENGTH], vva_chArray_Two[MAX_STRING_LENGTH]; // a character array is a string
+    char c_vvahArray_One[MAX_STRING_LENGTH], c_vvahArray_Two[MAX_STRING_LENGTH]; // a character array is a string
 
     //code
 
     // *** STRING INPUT ****
     printf("\n\n");
     printf("Enter first string : \n\n");
-    gets_s(vva_chArray_One, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray_One, MAX_STRING_LENGTH);
 
     printf("\n\n");
     printf("Enter second string : \n\n");
-    gets_s(vva_chArray_Two, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray_Two, MAX_STRING_LENGTH);
 
     // *** STRING CONCAT ***
     printf("\n\n");
     printf("****** BEFORE CONCATENATION**************");
     printf("\n\n");
-    printf("The original first string entered by you (i.e. : 'vva_chArray_one[]) is : \n\n");
-    printf("%s\n", vva_chArray_One);
+    printf("The original first string entered by you (i.e. : 'c_vvahArray_one[]) is : \n\n");
+    printf("%s\n", c_vvahArray_One);
 
     printf("\n\n");
-    printf("The original second string entered by you (i.e. : 'vva_chArray_Two[]) is : \n\n");
-    printf("%s\n", vva_chArray_Two);
+    printf("The original second string entered by you (i.e. : 'c_vvahArray_Two[]) is : \n\n");
+    printf("%s\n", c_vvahArray_Two);
 
-    vvaStrcat(vva_chArray_One, vva_chArray_Two);
+    vvaStrcat(c_vvahArray_One, c_vvahArray_Two);
 
     printf("\n\n");
     printf("****** AFTER CONCATENATION *********");
     printf("\n\n");
-    printf("'vva_chArray_One[]' is : \n\n");
-    printf("%s\n", vva_chArray_One);
+    printf("'c_vvahArray_One[]' is : \n\n");
+    printf("%s\n", c_vvahArray_One);
 
     printf("\n\n");
-    printf("'vva_chArray_Two[]' is : \n\n");
-    printf("%s\n", vva_chArray_Two);
+    printf("'c_vvahArray_Two[]' is : \n\n");
+    printf("%s\n", c_vvahArray_Two);
 
     return (0);
 }
@@ -53,22 +53,22 @@ void vvaStrcat(char str_destination[], char str_source[])
     int vvaStrlen(char[]);
 
     // variable declaration
-    int vva_iStringLength_Source = 0, vva_iStringLength_Destination = 0;
-    int vva_i, vva_j;
+    int i_vvaStringLength_Source = 0, i_vvaStringLength_Destination = 0;
+    int i_vva, vva_j;
 
     //code
-    vva_iStringLength_Source = vvaStrlen(str_source);
-    vva_iStringLength_Destination = vvaStrlen(str_destination);
+    i_vvaStringLength_Source = vvaStrlen(str_source);
+    i_vvaStringLength_Destination = vvaStrlen(str_destination);
 
     // last valid index of an array is length-1, as index begins from 0,
     // concatenation of second array must begin from length of the first array
     // which means we start with copying first index for str_source into the last index + 1 of str_destination
-    for (vva_i = vva_iStringLength_Destination, vva_j = 0; vva_j < vva_iStringLength_Source; vva_i++, vva_j++)
+    for (i_vva = i_vvaStringLength_Destination, vva_j = 0; vva_j < i_vvaStringLength_Source; i_vva++, vva_j++)
     {
-        str_destination[vva_i] = str_source[vva_j];
+        str_destination[i_vva] = str_source[vva_j];
     }
 
-    str_destination[vva_i] = '\0';
+    str_destination[i_vva] = '\0';
 }
 
 

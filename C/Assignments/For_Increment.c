@@ -2,9 +2,9 @@
 
 int main(void)
 {
-    for (unsigned int vva_index = 1; vva_index <= 10; vva_index++)
+    for (unsigned int i_vvandex = 1; i_vvandex <= 10; i_vvandex++)
     {
-        printf("%d \t", vva_index);
+        printf("%d \t", i_vvandex);
     }
     return (0);
 }

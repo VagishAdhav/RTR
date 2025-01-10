@@ -6,7 +6,7 @@
 int main (int argc, char * argv[], char *envp[])
 {
     // variable declaration
-    unsigned int vva_num;
+    unsigned int vva_num_vva;
 
     // function prototype
     void recursive(unsigned int);
@@ -14,12 +14,12 @@ int main (int argc, char * argv[], char *envp[])
     //code 
     printf("\n\n");
     printf("Enter any number : \n\n");
-    scanf("%u", &vva_num);
+    scanf("%u", &vva_num_vva);
 
     printf("\n\n");
     printf("Output of recursive function : \n\n");
 
-    recursive(vva_num);
+    recursive(vva_num_vva);
 
     printf("\n\n");
 

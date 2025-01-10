@@ -1,12 +1,12 @@
 #include <stdio.h>
 
-#define NUM_ELEMENTS 10
+#define num_vva_ELEMENTS 10
 
 int main(void)
 {
     // variable declaration
-    int vva_iArray[NUM_ELEMENTS];
-    int vva_i, vva_num;
+    int i_vvaArray[num_vva_ELEMENTS];
+    int i_vva, vva_num_vva;
 
     //code 
     printf("\n\n");
@@ -14,28 +14,28 @@ int main(void)
     //** Array elements input ****
     printf("Enter integer elements for array : \n\n");
 
-    for (vva_i = 0; vva_i < NUM_ELEMENTS; vva_i++)
+    for (i_vva = 0; i_vva < num_vva_ELEMENTS; i_vva++)
     {
-        scanf("%d", &vva_num);
-        vva_iArray[vva_i] = vva_num;
+        scanf("%d", &vva_num_vva);
+        i_vvaArray[i_vva] = vva_num_vva;
     }
 
-    // separating out even numbers from array elements
+    // separating out even num_vvabers from array elements
     printf("\n\n");
-    printf("Even numbers among the array elements are : \n\n");
-    for (vva_i = 0; vva_i < NUM_ELEMENTS; vva_i++)
+    printf("Even num_vvabers among the array elements are : \n\n");
+    for (i_vva = 0; i_vva < num_vva_ELEMENTS; i_vva++)
     {
-        if ((vva_iArray[vva_i] % 2) == 0)
-            printf("%d\n", vva_iArray[vva_i]);
+        if ((i_vvaArray[i_vva] % 2) == 0)
+            printf("%d\n", i_vvaArray[i_vva]);
     }
 
-    // separating out odd numbers from array elements
+    // separating out odd num_vvabers from array elements
     printf("\n\n");
-    printf("Odd numbers among the array elements are : \n\n");
-    for (vva_i = 0; vva_i < NUM_ELEMENTS; vva_i++)
+    printf("Odd num_vvabers among the array elements are : \n\n");
+    for (i_vva = 0; i_vva < num_vva_ELEMENTS; i_vva++)
     {
-        if ((vva_iArray[vva_i] % 2) != 0)
-            printf("%d\n", vva_iArray[vva_i]);
+        if ((i_vvaArray[i_vva] % 2) != 0)
+            printf("%d\n", i_vvaArray[i_vva]);
     }
 
     return (0);

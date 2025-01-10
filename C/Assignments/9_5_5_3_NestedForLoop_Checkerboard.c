@@ -3,22 +3,22 @@
 int main(void)
 {
     //variable declaration 
-    int vva_i, vva_j, vva_c;
+    int i_vva, vva_j, c_vva;
 
     //code 
     printf("\n\n");
 
-    for (vva_i = 0; vva_i < 64; vva_i++)
+    for (i_vva = 0; i_vva < 64; i_vva++)
     {
         for (vva_j = 0; vva_j < 64; vva_j++)
         {
-            vva_c = ((vva_i & 0x8) == 0) ^ ((vva_j & 0x8) == 0);
+            c_vva = ((i_vva & 0x8) == 0) ^ ((vva_j & 0x8) == 0);
 
-            if (vva_c == 0)
+            if (c_vva == 0)
             {
                 printf("  ");
             }
-            if (vva_c == 1)
+            if (c_vva == 1)
             {
                 printf("* ");
             }

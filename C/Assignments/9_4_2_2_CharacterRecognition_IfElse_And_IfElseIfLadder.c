@@ -16,44 +16,44 @@
 int main(void)
 {
     // variable declaration
-    char vva_ch;
-    int vva_ch_value;
+    char c_vvah;
+    int c_vvah_value;
 
     //code
     printf("\n\n");
 
     printf("Enter character : ");
-    vva_ch = getch();
+    c_vvah = getch();
 
     printf("\n\n");
 
-    if (vva_ch == 'A' || vva_ch == 'a' ||\
-        vva_ch == 'O' || vva_ch == 'o' ||\
-        vva_ch == 'I' || vva_ch == 'i' ||\
-        vva_ch == 'E' || vva_ch == 'e' ||\
-        vva_ch == 'U' || vva_ch == 'u')
+    if (c_vvah == 'A' || c_vvah == 'a' ||\
+        c_vvah == 'O' || c_vvah == 'o' ||\
+        c_vvah == 'I' || c_vvah == 'i' ||\
+        c_vvah == 'E' || c_vvah == 'e' ||\
+        c_vvah == 'U' || c_vvah == 'u')
     {
-        printf("Character \'%c\' entered by you is a VOWEL character from the english alphabet !!! \n\n", vva_ch);
+        printf("Character \'%c\' entered by you is a VOWEL character from the english alphabet !!! \n\n", c_vvah);
     }
     else
     {
-        vva_ch_value = (int)vva_ch;
+        c_vvah_value = (int)c_vvah;
         
         //if the character has ASCII value between 65 and 90 or between 97 and 122,
         // it is still A letter of the alphabet but it is a 'CONSONANT' and not 'VOWEL'
 
-        if ((vva_ch_value >= CHAR_ALPHABET_UPPER_CASE_BEGINNING ) && (vva_ch_value <= CHAR_ALPHABET_UPPER_CASE_ENDING) ||
-            (vva_ch_value >= CHAR_ALPHABET_LOWER_CASE_BEGINNING ) && (vva_ch_value <= CHAR_ALPHABET_LOWER_CASE_ENDING))
+        if ((c_vvah_value >= CHAR_ALPHABET_UPPER_CASE_BEGINNING ) && (c_vvah_value <= CHAR_ALPHABET_UPPER_CASE_ENDING) ||
+            (c_vvah_value >= CHAR_ALPHABET_LOWER_CASE_BEGINNING ) && (c_vvah_value <= CHAR_ALPHABET_LOWER_CASE_ENDING))
         {
-            printf("Character \'%c\' entered by you is a CONSTANT character from the english alphabet !!! \n\n", vva_ch);
+            printf("Character \'%c\' entered by you is a CONSTANT character from the english alphabet !!! \n\n", c_vvah);
         }
-        else if (vva_ch_value >= CHAR_DIGIT_BEGINNING && vva_ch_value <= CHAR_DIGIT_ENDING)
+        else if (c_vvah_value >= CHAR_DIGIT_BEGINNING && c_vvah_value <= CHAR_DIGIT_ENDING)
         {
-            printf("Character \'%c\' entered by you is a DIGIT character !!! \n\n", vva_ch);
+            printf("Character \'%c\' entered by you is a DIGIT character !!! \n\n", c_vvah);
         }
         else
         {
-            printf("Character \'%c\' entered by you is SPECIAL character !!! \n\n", vva_ch);
+            printf("Character \'%c\' entered by you is SPECIAL character !!! \n\n", c_vvah);
         }
     }
 

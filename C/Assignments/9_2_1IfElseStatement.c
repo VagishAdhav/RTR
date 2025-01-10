@@ -3,16 +3,16 @@
 int main(void)
 {
     //variable declaration
-    int vva_a, vva_b, vva_p;
+    int a_vva, b_vva, vva_p;
 
     // code
-    vva_a = 9;
-    vva_b = 30;
+    a_vva = 9;
+    b_vva = 30;
     vva_p = 30;
 
     // First if else pair
     printf("\n\n");
-    if (vva_a < vva_b)
+    if (a_vva < b_vva)
     {
         printf("Entering first if-block..\n\n");
         printf("A is less than B !!! \n\n");
@@ -25,7 +25,7 @@ int main(void)
 
     // second if else pair
     printf("\n\n");
-    if (vva_b != vva_p)
+    if (b_vva != vva_p)
     {
         printf("Entering second if-block.. \n\n");
         printf("B is NOT equal to P !!!\n\n");

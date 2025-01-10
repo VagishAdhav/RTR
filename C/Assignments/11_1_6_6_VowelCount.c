@@ -8,48 +8,48 @@ int main(void)
     int vva_MyStrlen(char[]);
 
     // variable declaration
-    char vva_chArray[MAX_STRING_LENGTH]; // A character array is a string
-    int vva_iStringLength;
-    int vva_count_A = 0, vva_count_E = 0, vva_count_I = 0, vva_count_O = 0, vva_count_U = 0; // initial counts = 0;
-    int vva_i;
+    char c_vvahArray[MAX_STRING_LENGTH]; // A character array is a string
+    int i_vvaStringLength;
+    int c_vvaount_A = 0, c_vvaount_E = 0, c_vvaount_I = 0, c_vvaount_O = 0, c_vvaount_U = 0; // initial counts = 0;
+    int i_vva;
 
     //code
 
     // **** STRING INPUT *********
     printf("\n\n");
     printf("Enter a string : \n\n");
-    gets_s(vva_chArray, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray, MAX_STRING_LENGTH);
 
     // ** STRING_OUTPUT *****
     printf("\n\n");
     printf("String entered by you is : \n\n");
-    printf("%s\n", vva_chArray);
+    printf("%s\n", c_vvahArray);
 
-    vva_iStringLength = vva_MyStrlen(vva_chArray);
+    i_vvaStringLength = vva_MyStrlen(c_vvahArray);
 
-    for (vva_i = 0; vva_i < vva_iStringLength; vva_i++)
+    for (i_vva = 0; i_vva < i_vvaStringLength; i_vva++)
     {
-        switch(vva_chArray[vva_i])
+        switch(c_vvahArray[i_vva])
         {
             case 'A':
             case 'a':
-                vva_count_A++;
+                c_vvaount_A++;
                 break;
             case 'E':
             case 'e':
-                vva_count_E++;
+                c_vvaount_E++;
                 break;
             case 'I':
             case 'i':
-                vva_count_I++;
+                c_vvaount_I++;
                 break;
             case 'O':
             case 'o':
-                vva_count_O++;
+                c_vvaount_O++;
                 break;
             case 'U':
             case 'u':
-                vva_count_U++;
+                c_vvaount_U++;
                 break;
             default:
                 break;
@@ -58,11 +58,11 @@ int main(void)
 
     printf("\n\n");
     printf("In the string entered by you , the vowels and their number of occurrences are as follows: \n\n");
-    printf("'A' has occurred = %d times !!!\n\n", vva_count_A);
-    printf("'E' has occurred = %d times !!!\n\n", vva_count_E);
-    printf("'I' has occurred = %d times !!!\n\n", vva_count_I);
-    printf("'O' has occurred = %d times !!!\n\n", vva_count_O);
-    printf("'U' has occurred = %d times !!!\n\n", vva_count_U);
+    printf("'A' has occurred = %d times !!!\n\n", c_vvaount_A);
+    printf("'E' has occurred = %d times !!!\n\n", c_vvaount_E);
+    printf("'I' has occurred = %d times !!!\n\n", c_vvaount_I);
+    printf("'O' has occurred = %d times !!!\n\n", c_vvaount_O);
+    printf("'U' has occurred = %d times !!!\n\n", c_vvaount_U);
 
     return(0);
 

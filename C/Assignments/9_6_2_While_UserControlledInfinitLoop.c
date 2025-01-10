@@ -3,7 +3,7 @@
 int main(void)
 {
     // variable declaration
-    char vva_option, vva_ch = '\0';
+    char vva_option, c_vvah = '\0';
 
     //code
     printf("\n\n");
@@ -19,8 +19,8 @@ int main(void)
         while (1)
         {
             printf("In loop ....\n");
-            vva_ch = getch();
-            if (vva_ch == 'Q' || vva_ch == 'q')
+            c_vvah = getch();
+            if (c_vvah == 'Q' || c_vvah == 'q')
                 break; // user controlled exit from infinite loop
         }
 

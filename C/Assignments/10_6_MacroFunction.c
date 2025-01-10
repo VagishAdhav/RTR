@@ -1,46 +1,46 @@
 #include <stdio.h>
 
-#define MAX_NUMBER(a, b) ((a) > (b) ? (a) : (b))
+#define MAX_num_vvaBER(a, b) ((a) > (b) ? (a) : (b))
 
 int main(int argc, char *argv[], char *envp[])
 {
     //variable declarations
-    int vva_iNum_01;
-    int vva_iNum_02;
-    int vva_iResult;
+    int i_vvanum_vva_01;
+    int i_vvanum_vva_02;
+    int i_vvaResult;
 
-    float vva_fNum_01;
-    float vva_fNum_02;
-    float vva_fResult;
+    float f_vvanum_vva_01;
+    float f_vvanum_vva_02;
+    float f_vvaResult;
 
     // code
     // ********* COMPARING INTEGER VALUES **********
     printf("\n\n");
     printf("Enter an integer number : \n\n");
-    scanf("%d", &vva_iNum_01);
+    scanf("%d", &i_vvanum_vva_01);
 
     printf("\n\n");
     printf("Enter another integer number : \n\n");
-    scanf("%d", &vva_iNum_02);
+    scanf("%d", &i_vvanum_vva_02);
 
-    vva_iResult = MAX_NUMBER(vva_iNum_01, vva_iNum_02);
+    i_vvaResult = MAX_num_vvaBER(i_vvanum_vva_01, i_vvanum_vva_02);
     printf("\n\n");
-    printf("Result of macro function MAX_NUMBER() = %d\n", vva_iResult);
+    printf("Result of macro function MAX_num_vvaBER() = %d\n", i_vvaResult);
 
     printf("\n\n");
 
     // ******** COMPARING FLOATING POINT VALUES *****************
     printf("\n\n");
     printf("Enter a floating point number : \n\n");
-    scanf("%f", &vva_fNum_01);
+    scanf("%f", &f_vvanum_vva_01);
 
     printf("\n\n");    
     printf("Enter another floating point number : \n\n");
-    scanf("%f", &vva_fNum_02);
+    scanf("%f", &f_vvanum_vva_02);
 
-    vva_fResult = MAX_NUMBER(vva_fNum_01, vva_fNum_02);
+    f_vvaResult = MAX_num_vvaBER(f_vvanum_vva_01, f_vvanum_vva_02);
     printf("\n\n");
-    printf("Result of macro function MAX_NUMBER() = %f\n", vva_fResult);
+    printf("Result of macro function MAX_num_vvaBER() = %f\n", f_vvaResult);
 
     printf("\n\n");
 

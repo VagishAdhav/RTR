@@ -8,9 +8,9 @@ int main(void)
     int vva_MyStrlen(char[]);
 
     // variable declaration
-    char vva_chArray[MAX_STRING_LENGTH]; // A character array is a string
-    int vva_iStringLength;
-    int vva_i;
+    char c_vvahArray[MAX_STRING_LENGTH]; // A character array is a string
+    int i_vvaStringLength;
+    int i_vva;
     int vva_word_count = 0, vva_space_count = 0;
 
     //code
@@ -18,13 +18,13 @@ int main(void)
     // *** STRING_OUTPUT ****
     printf("\n\n");
     printf("Enter a string : \n\n");
-    gets_s(vva_chArray, MAX_STRING_LENGTH);
+    gets_s(c_vvahArray, MAX_STRING_LENGTH);
 
-    vva_iStringLength = vva_MyStrlen(vva_chArray);
+    i_vvaStringLength = vva_MyStrlen(c_vvahArray);
 
-    for (vva_i = 0; vva_i < vva_iStringLength; vva_i++)
+    for (i_vva = 0; i_vva < i_vvaStringLength; i_vva++)
     {
-        switch (vva_chArray[vva_i])
+        switch (c_vvahArray[i_vva])
         {
             case ' ':
                 vva_space_count++;
@@ -39,11 +39,11 @@ int main(void)
     // ***  STRING OUTPUT ****
     printf("\n\n");
     printf("String entered by you : \n\n");
-    printf("%s\n", vva_chArray);
+    printf("%s\n", c_vvahArray);
 
     printf("\n\n");
-    printf("Number of spaces in the input string = %d\n\n", vva_space_count);
-    printf("Number of words in the input string = %d\n\n", vva_word_count);
+    printf("number of spaces in the input string = %d\n\n", vva_space_count);
+    printf("number of words in the input string = %d\n\n", vva_word_count);
 
     return(0);
 }
