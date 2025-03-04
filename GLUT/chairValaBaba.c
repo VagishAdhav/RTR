@@ -6,6 +6,7 @@
 // Global variable declarations 
 
 extern GLfloat fRange; 
+#define MY_PI 3.14159265358979323846264338327950288
 
 
 void drawChairWithPerson(void)
@@ -146,7 +147,6 @@ void drawChairWithPerson(void)
 		glVertex3f(3.5f * sin(angle + 0.4f) + 24.5f, (3.5f * cos(angle + 0.4f)) - 10.0f, 0.0f);
 	}
 	glEnd();
-
 	//hand right
 	glBegin(GL_POLYGON);
 		glColor3f(1.0f, 0.549f, 0.0f); // DarkOrange color
@@ -160,7 +160,6 @@ void drawChairWithPerson(void)
 		glColor3f(1.0f, 0.549f, 0.0f); // DarkOrange color
 		glVertex3f(17.0f, -6.0f, 0.0f);  // Bottom-bottom right
 	glEnd();
-
 	// knee left
 	glBegin(GL_TRIANGLES);
 	glColor3f(0.565f, 0.933f, 0.565f); // PapayaWhip color
