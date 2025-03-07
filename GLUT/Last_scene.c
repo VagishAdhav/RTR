@@ -35,7 +35,6 @@ void drawLastScene(void)
 	drawBithdayCake();
     glPopMatrix();
 
-	drawBallon();
 	drawHappy();
 	drawBirthday();
 	drawSagar();
@@ -214,10 +213,9 @@ void drawHappy()
     /* HAPPY */
     drawH(-120.0f, 50.0f, 10.0f);
     drawA(-100.0f, 50.0f, 10.0f);
-    drawA(-80.0f, 50.0f, 10.0f);
+    drawP(-80.0f, 50.0f, 10.0f);
     drawP(-60.0f, 50.0f, 10.0f);
-    drawP(-40.0f, 50.0f, 10.0f);
-    drawY(-20.0f, 50.0f, 10.0f);
+    drawY(-40.0f, 50.0f, 10.0f);
 
     glLineWidth(1.0f);
     glPointSize(1.0f);

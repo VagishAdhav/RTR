@@ -9,6 +9,8 @@
 // Global Constant macros
 #define TIMER (100)
 
+#define SECOND_SCREEN_TICKS (200)
+
 // Global variable declarations 
 BOOL bFullScreen = TRUE; 
 GLfloat fRange = 100.0f; 
@@ -96,9 +98,9 @@ void display(void)
 	// code 
 	glClear(GL_COLOR_BUFFER_BIT); 
 
-	printf("guiTicks : %d\t", guiTicks);
+	//printf("guiTicks : %d\t", guiTicks);
 
-	if (guiTicks < 400)
+	if (guiTicks < SECOND_SCREEN_TICKS)
 	{
 
 		// draw Wall
@@ -114,7 +116,7 @@ void display(void)
 
 		// Draw Oscilloscope
 		glPushMatrix();
-		glTranslatef(50.0f, 32.0f, 0.0f);
+		glTranslatef(59.0f, 32.0f, 0.0f);
 		drawOscilloScope(SCOPE_ORIGIN_X, SCOPE_ORIGIN_Y, SCOPE_WIDTH, SCOPE_HEIGHT);
 		glPopMatrix();
 
@@ -127,15 +129,29 @@ void display(void)
 
 		// draw Lamp
 		glPushMatrix();
-		glTranslatef(80.0f, 39.0f, 0.0f);
+		glTranslatef(85.0f, 39.0f, 0.0f);
 		drawLamp();
 		glPopMatrix();
 
 		// draw Cabinet
 		glPushMatrix();
 		glScalef(0.5f, 0.5f, 1.0f);
-		glTranslatef(-95.0f, -90.0f, 0.0f);
+		glTranslatef(-95.0f, -95.0f, 0.0f);
 		drawBottomCabinet();
+		glPopMatrix();
+
+		// draw Monitor
+		glPushMatrix();
+		glTranslatef(0.0f, 55.0f, 0.0f);
+		drawMonitor();
+		glPopMatrix();
+
+		// draw VS logo
+		glPushMatrix();
+		glTranslatef(-29.0f, 72.0f, 0.0f);
+		glScalef(0.5f, 0.5f, 1.0f);
+
+		drawVSLogo();
 		glPopMatrix();
 
 		// draw Human with chair
@@ -144,17 +160,34 @@ void display(void)
 		glTranslatef(0.0f, 20.0f, 0.0f);
 		drawChairWithPerson();
 		glPopMatrix();
-		glEnd();
 
-		// draw Window
-		//glPushMatrix();
-		//glTranslatef(-100.0f, 70.0f, 0.0f);
-		//DrawWindow();
-		//glPopMatrix();
 	}
 	else
 	{
+		// background color
+		glBegin(GL_QUADS);
+			glColor3f(0.7f, 0.9f, 1.0f);
+			glVertex3f(-100.0f * gfAspectRatio, 100.0f, 0.0f);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(-100.0f * gfAspectRatio, -100.0f, 0.0f);
+			glColor3f(0.0f, 0.0f, 0.0f);
+			glVertex3f(100.0f * gfAspectRatio, -100.0f, 0.0f);
+			glColor3f(0.7f, 0.4f, 0.6f);
+			glVertex3f(100.0f * gfAspectRatio, 100.0f, 0.0f);
+		glEnd();
 		drawLastScene();
+
+		if (guiTicks > 340)
+		{
+			glPushMatrix();
+			glTranslatef(0.0f, guiTicks-340, 0.0f);
+			drawBallon();
+			glPopMatrix();
+		}
+		else
+		{
+			drawBallon();
+		}
 	}
 
 	//end
@@ -393,43 +426,3 @@ void drawFloor()
 	glEnd();
 
 }
-
-// void DrawWindow(void)
-// {
-// 	#define WINDOW_WIDTH 50.0f
-// 	#define WINDOW_HEIGHT 30.0f
-
-// 	#define WINDOW_FRAME_COLOR  0.502, 0.000, 0.000
-
-// 	glColor3f(0.0f, 0.0f, 0.0f);
-// 	glBegin(GL_QUADS);
-
-// 	// top right
-// 	glVertex2f(WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f);
-
-// 	// top left
-// 	glVertex2f(-WINDOW_WIDTH/2.0f, WINDOW_HEIGHT/2.0f);
-
-// 	// bottom left
-// 	glVertex2f(-WINDOW_WIDTH/2.0f, -WINDOW_HEIGHT/2.0f);
-
-// 	//bottom right
-// 	glVertex2f(WINDOW_WIDTH/2.0f, -WINDOW_HEIGHT/2.0f);
-
-// 	// inner frame
-// 	glColor3f(0.0f, 0.0f, 0.0f);
-
-// 	// top right
-// 	glVertex2f(WINDOW_WIDTH*0.9f/2.0f, WINDOW_HEIGHT*0.8f/2.0f);
-
-// 	// top left
-// 	glVertex2f(-WINDOW_WIDTH*0.9f/2.0f, WINDOW_HEIGHT*0.8f/2.0f);
-
-// 	// bottom left
-// 	glVertex2f(-WINDOW_WIDTH*0.9f/2.0f, -WINDOW_HEIGHT*0.8f/2.0f);
-
-// 	//bottom right
-// 	glVertex2f(WINDOW_WIDTH*0.9f/2.0f, -WINDOW_HEIGHT*0.8f/2.0f);
-
-// 	glEnd();
-// }

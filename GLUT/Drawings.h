@@ -92,3 +92,4 @@ void drawX(GLfloat Xbox, GLfloat Ybox, GLfloat xL);
 void drawY(GLfloat Xbox, GLfloat Ybox, GLfloat xL);
 void drawZ(GLfloat Xbox, GLfloat Ybox, GLfloat xL);
 extern void drawChairWithPerson(void);
+void drawBallon(void);

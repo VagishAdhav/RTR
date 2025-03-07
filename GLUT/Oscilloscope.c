@@ -336,7 +336,7 @@ void drawOscilloScope(float fCenterX, float fCenterY, float fWidth, float fHeigh
 
 	// draw Sine Wave
 	// plot a live wave by incrementing right x coordinate
-	float fRightX = (pTopLeft.cords.x + (float)guiTicks - 60);
+	float fRightX = (pTopLeft.cords.x + (float)guiTicks - 65);
 	float fPhaseShift = 0;
 	float fNumWaves = 0;
 
