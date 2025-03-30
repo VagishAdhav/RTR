@@ -302,8 +302,9 @@ int initialise(void)
     pfd.cGreenBits = 8;
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
+    pfd.cDepthBits = 32;
 
-    //get device context
+    //get devixe context
     ghdc = GetDC(ghwnd);
     if (ghdc == NULL)
     {
@@ -346,6 +347,14 @@ int initialise(void)
     printGLInfo();
 
     //from here onwards opengl code starts
+
+
+    // depth related code
+    glShadeModel(GL_SMOOTH); // tell opengl to use smoothness whilde shading
+    glClearDepth(1.0f); // depth buffer to 1.0
+    glEnable(GL_DEPTH_TEST); // enable depth test
+    glDepthFunc(GL_LEQUAL); // pass the fragments whose values are less than are equal to glClear depth
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // whenever some shapes are deterioted due to prespective projection and depth, give them nicest appearance
 
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -394,10 +403,11 @@ void resize(int width, int height)
     // 4. Far
     gluPerspective(45.0f, (GLdouble)width/(GLdouble)height, 0.1f, 100.0f);
 
-    // frustrun
-    //double H = tan((45.0/2.0)/ 180*3.14)*0.1f;
-    //double W = H *  (GLdouble)width/(GLdouble)height;
-    //glFrustum(-W, W, -H, H, -0.1, 100.0f);
+    // // frustrun
+    // GLdouble angle = 45.0f * (3.14f/180.0f);
+    // GLdouble H = tan(angle/2.0)*(0.1f);
+    // GLdouble W = H * ((GLdouble)width/(GLdouble)height);
+    // glFrustum(-W, W, -H, H, 0.1, 100.0f);
 
 }
 
@@ -412,51 +422,21 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    // transform drawing , push it backwards and left
-    glTranslatef(-1.5f, 0.0f, -6.0f);
+    // trasform drawing , push it forward
+    glTranslatef(0.0f, 0.0f, -10.0f);
     
-    // draw the triangle
+    // draw the trangle
     glBegin(GL_TRIANGLES);
     
-        // appex
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        
-        // left bottom
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
+    // appex
+    glVertex3f(0.0f, 1.0f, 0.0f);
+    
+    // left bottom
+    glVertex3f(-1.0f, -1.0f, 0.0f);
 
-        // right bottom
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
+    // right bottom
+    glVertex3f(1.0f, -1.0f, 0.0f);
 
-    glEnd();
-
-    // draw the rectangle
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // set  to identity matrix
-    glLoadIdentity();
-
-    glTranslatef(1.5f, 0.0f, -6.0f);
-
-    glBegin(GL_QUADS);
-
-       glColor3f(0.0f, 0.0f, 1.0f);
-       
-       // top right
-       glVertex3f(1.0f, 1.0f, 0.0f);
-       
-       // top left
-       glVertex3f(-1.0f, 1.0f, 0.0f);
-   
-       // bottom right
-       glVertex3f(-1.0f, -1.0f, 0.0f);
-   
-       // bottom left
-       glVertex3f(1.0f, -1.0f, 0.0f);
-   
     glEnd();
 
     SwapBuffers(ghdc);

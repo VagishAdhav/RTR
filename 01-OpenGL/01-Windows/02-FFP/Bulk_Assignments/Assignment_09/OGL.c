@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -42,6 +43,9 @@ BOOL gbActiveWindow = FALSE;
 
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
+
+// circle premitive
+GLenum gCircleMode = GL_POINTS;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -92,7 +96,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     RegisterClassEx(&wndclass);
 
     // create window
-    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Vishvanath Adhav"), 
+    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Adhav. Assignment-09"), 
                         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
                         GetSystemMetrics(SM_CXSCREEN)/2 - WIN_WIDTH/2,
                         GetSystemMetrics(SM_CYSCREEN)/2 - WIN_HEIGHT/2, 
@@ -202,6 +206,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     gbFullScreen = FALSE;
                 }
                 break;
+
+            case 'P':
+            case 'p':
+                gCircleMode = GL_POINTS;
+                break;
+
+            case 'L':
+            case 'l':
+                gCircleMode = GL_LINE_LOOP;
+                break;
+
             default:
                 break;
         }
@@ -223,6 +238,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         return (0);
     
     case WM_SIZE:
+        fprintf(gpFile, "WM_SIZE\n");
+
         resize(LOWORD(lParam), HIWORD(lParam));
         break;
 
@@ -289,6 +306,7 @@ int initialise(void)
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
     int iPixelFormatIndex = 0;
+    RECT rect;
 
     //code
     // pixel format descriptor initialization
@@ -303,7 +321,7 @@ int initialise(void)
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
 
-    //get device context
+    //get devixe context
     ghdc = GetDC(ghwnd);
     if (ghdc == NULL)
     {
@@ -331,14 +349,14 @@ int initialise(void)
     ghrc = wglCreateContext(ghdc); // wgl* are bridging API
     if (ghrc == NULL)
     {
-        fprintf(gpFile, "wglCreateContext() failed");
+        fprintf(gpFile, "wglCreateContext() failed\n");
         return -4;
     }
 
     // make this rendering conext as current context
     if (wglMakeCurrent(ghdc, ghrc) == FALSE)
     {
-        fprintf(gpFile, "wglMakeCurrent() failed");
+        fprintf(gpFile, "wglMakeCurrent() failed\n");
         return -5; 
     }
 
@@ -351,8 +369,9 @@ int initialise(void)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // warm up resize
-    resize(WIN_WIDTH, WIN_HEIGHT);
-
+    fprintf(gpFile, "Warm up\n");
+    GetClientRect(ghwnd, &rect);
+    resize(rect.right - rect.left, rect.bottom - rect.top);
     return 0;
 }
 
@@ -371,6 +390,7 @@ void printGLInfo(void)
 
 void resize(int width, int height)
 {
+    fprintf(gpFile, "width : %d, height : %d\n", width, height);
     //code
     // if height by accident becomes 0 or less then make height 1
     if (height <= 0)
@@ -394,7 +414,7 @@ void resize(int width, int height)
     // 4. Far
     gluPerspective(45.0f, (GLdouble)width/(GLdouble)height, 0.1f, 100.0f);
 
-    // frustrun
+    // frustrum
     //double H = tan((45.0/2.0)/ 180*3.14)*0.1f;
     //double W = H *  (GLdouble)width/(GLdouble)height;
     //glFrustum(-W, W, -H, H, -0.1, 100.0f);
@@ -403,6 +423,9 @@ void resize(int width, int height)
 
 void display(void)
 {
+    //function declaration
+    void drawUnitCircleAroundOrigin(void);
+
     //code
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -412,52 +435,74 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    // transform drawing , push it backwards and left
-    glTranslatef(-1.5f, 0.0f, -6.0f);
-    
-    // draw the triangle
-    glBegin(GL_TRIANGLES);
-    
-        // appex
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        
-        // left bottom
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
+    // trasform drawing ,push it forward
+    glTranslatef(0.0f, 0.0f, -3.0f);
 
-        // right bottom
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
+    // drarw 41 vertical and 41 horizontal lines on -1 to 1
+    float gap = 2.0f/40.0f;
+
+    // blue color
+    glColor3f(0.0f, 0.0f, 1.0f);
+
+    float x = 1.0f;
+    for (int line = 0; line < 41; line++)
+    {   
+        glLineWidth(1.0f);
+        if (line % 5 == 0)
+        {
+            glLineWidth(2.0f);
+        }
+        glBegin(GL_LINES);
+        glVertex3f(x, -1.0f, 0.0f);
+        glVertex3f(x, 1.0f, 0.0f);
+        glEnd();
+        x = x - gap;  
+    }
+
+    float y = 1.0f;
+    for (int line = 0; line < 41; line++)
+    {   
+        glLineWidth(1.0f);
+        if (line % 5 == 0)
+        {
+            glLineWidth(2.0f);
+        }
+        glBegin(GL_LINES);
+        glVertex3f(-1.0f, y, 0.0f);
+        glVertex3f(1.0f, y, 0.0f);
+        glEnd();
+        y = y - gap;  
+    } 
+
+
+    glLineWidth(3.0f);
+    
+    // draw line at the center
+    glBegin(GL_LINES);
+    
+    // green color
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, -1.0f, 0.0f);
+    glVertex3f(0.0f, 1.0f, 0.0f);    
 
     glEnd();
+ 
+    glBegin(GL_LINES);
+ 
+    // Red color
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(-1.0f, 0.0f, 0.0f);
+    glVertex3f(1.0f, 0.0f, 0.0f);    
 
-    // draw the rectangle
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // set  to identity matrix
-    glLoadIdentity();
-
-    glTranslatef(1.5f, 0.0f, -6.0f);
-
-    glBegin(GL_QUADS);
-
-       glColor3f(0.0f, 0.0f, 1.0f);
-       
-       // top right
-       glVertex3f(1.0f, 1.0f, 0.0f);
-       
-       // top left
-       glVertex3f(-1.0f, 1.0f, 0.0f);
-   
-       // bottom right
-       glVertex3f(-1.0f, -1.0f, 0.0f);
-   
-       // bottom left
-       glVertex3f(1.0f, -1.0f, 0.0f);
-   
     glEnd();
+    
+    glLineWidth(1.0f);
+    
+    // DRAW UNIT CIRCLE AROUND ORIGIN
+    // Yellow color
+    glColor3f(1.0f, 1.0f, 0.0f);
+    glScalef(0.3f, 0.3f, 1.0f);
+    drawUnitCircleAroundOrigin();
 
     SwapBuffers(ghdc);
 }
@@ -511,4 +556,19 @@ void uninitialise(void)
         fclose(gpFile);
         gpFile = NULL;
     }
+}
+
+void drawUnitCircleAroundOrigin(void)
+{
+	 // variable declaration
+    float x, y;
+
+    glBegin(gCircleMode);
+    for(float angle = 0.0f; angle < 2 * M_PI; angle += 0.005f)
+    {
+        x = cos(angle);
+        y = sin(angle);
+        glVertex3f(x, y, 0.0f);
+    }
+    glEnd();
 }

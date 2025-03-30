@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -24,7 +25,6 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 // global macro
 #define WIN_WIDTH  (800)
 #define WIN_HEIGHT (600)
-
 
 // global variable declarations
 // variables related to fullscreen
@@ -92,7 +92,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     RegisterClassEx(&wndclass);
 
     // create window
-    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Vishvanath Adhav"), 
+    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Adhav. Assignment-11"), 
                         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
                         GetSystemMetrics(SM_CXSCREEN)/2 - WIN_WIDTH/2,
                         GetSystemMetrics(SM_CYSCREEN)/2 - WIN_HEIGHT/2, 
@@ -202,6 +202,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     gbFullScreen = FALSE;
                 }
                 break;
+           
             default:
                 break;
         }
@@ -223,6 +224,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         return (0);
     
     case WM_SIZE:
+        fprintf(gpFile, "WM_SIZE\n");
+
         resize(LOWORD(lParam), HIWORD(lParam));
         break;
 
@@ -289,6 +292,7 @@ int initialise(void)
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
     int iPixelFormatIndex = 0;
+    RECT rect;
 
     //code
     // pixel format descriptor initialization
@@ -303,7 +307,7 @@ int initialise(void)
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
 
-    //get device context
+    //get devixe context
     ghdc = GetDC(ghwnd);
     if (ghdc == NULL)
     {
@@ -331,14 +335,14 @@ int initialise(void)
     ghrc = wglCreateContext(ghdc); // wgl* are bridging API
     if (ghrc == NULL)
     {
-        fprintf(gpFile, "wglCreateContext() failed");
+        fprintf(gpFile, "wglCreateContext() failed\n");
         return -4;
     }
 
     // make this rendering conext as current context
     if (wglMakeCurrent(ghdc, ghrc) == FALSE)
     {
-        fprintf(gpFile, "wglMakeCurrent() failed");
+        fprintf(gpFile, "wglMakeCurrent() failed\n");
         return -5; 
     }
 
@@ -351,8 +355,9 @@ int initialise(void)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // warm up resize
-    resize(WIN_WIDTH, WIN_HEIGHT);
-
+    fprintf(gpFile, "Warm up\n");
+    GetClientRect(ghwnd, &rect);
+    resize(rect.right - rect.left, rect.bottom - rect.top);
     return 0;
 }
 
@@ -371,6 +376,7 @@ void printGLInfo(void)
 
 void resize(int width, int height)
 {
+    fprintf(gpFile, "width : %d, height : %d\n", width, height);
     //code
     // if height by accident becomes 0 or less then make height 1
     if (height <= 0)
@@ -403,6 +409,9 @@ void resize(int width, int height)
 
 void display(void)
 {
+    //function declaration
+    void drawKundali(void);
+
     //code
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -412,52 +421,10 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    // transform drawing , push it backwards and left
-    glTranslatef(-1.5f, 0.0f, -6.0f);
-    
-    // draw the triangle
-    glBegin(GL_TRIANGLES);
-    
-        // appex
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        
-        // left bottom
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
+    // trasform drawing ,push it forward
+    glTranslatef(0.0f, 0.0f, -2.0f);
 
-        // right bottom
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
-
-    glEnd();
-
-    // draw the rectangle
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // set  to identity matrix
-    glLoadIdentity();
-
-    glTranslatef(1.5f, 0.0f, -6.0f);
-
-    glBegin(GL_QUADS);
-
-       glColor3f(0.0f, 0.0f, 1.0f);
-       
-       // top right
-       glVertex3f(1.0f, 1.0f, 0.0f);
-       
-       // top left
-       glVertex3f(-1.0f, 1.0f, 0.0f);
-   
-       // bottom right
-       glVertex3f(-1.0f, -1.0f, 0.0f);
-   
-       // bottom left
-       glVertex3f(1.0f, -1.0f, 0.0f);
-   
-    glEnd();
+    drawKundali();
 
     SwapBuffers(ghdc);
 }
@@ -512,3 +479,43 @@ void uninitialise(void)
         gpFile = NULL;
     }
 }
+
+void drawKundali(void)
+{
+    #define KUNDALI_WIDTH (1.0f)
+    #define KUNDALI_HEIGHT (0.75f)
+
+
+    glLineWidth(1.0f);
+    
+    // Orange color
+    glColor3f(1.000, 0.647, 0.000);
+
+    // draw outer rectangle
+    glBegin(GL_LINE_LOOP);
+        // right top
+        glVertex3f(KUNDALI_WIDTH/2.0f, KUNDALI_HEIGHT/2.0f, 0.0f);
+        glVertex3f(-KUNDALI_WIDTH/2.0f, KUNDALI_HEIGHT/2.0f, 0.0f);
+        glVertex3f(-KUNDALI_WIDTH/2.0f, -KUNDALI_HEIGHT/2.0f, 0.0f);
+        glVertex3f(KUNDALI_WIDTH/2.0f, -KUNDALI_HEIGHT/2.0f, 0.0f);
+    glEnd();
+
+    // draw Inner rectangle
+    glBegin(GL_LINE_LOOP);
+        // top
+        glVertex3f(0.0f, KUNDALI_HEIGHT/2.0f, 0.0f);
+        glVertex3f(-KUNDALI_WIDTH/2.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, -KUNDALI_HEIGHT/2.0f, 0.0f);
+        glVertex3f(KUNDALI_WIDTH/2.0f, 0.0f, 0.0f);
+    glEnd();
+
+    // draw Cross lines
+    glBegin(GL_LINES);
+        glVertex3f(-KUNDALI_WIDTH/2.0f, KUNDALI_HEIGHT/2.0f, 0.0f); 
+        glVertex3f(KUNDALI_WIDTH/2.0f, -KUNDALI_HEIGHT/2.0f, 0.0f);
+        glVertex3f(KUNDALI_WIDTH/2.0f, KUNDALI_HEIGHT/2.0f, 0.0f);
+        glVertex3f(-KUNDALI_WIDTH/2.0f, -KUNDALI_HEIGHT/2.0f, 0.0f);
+    glEnd();
+
+}
+

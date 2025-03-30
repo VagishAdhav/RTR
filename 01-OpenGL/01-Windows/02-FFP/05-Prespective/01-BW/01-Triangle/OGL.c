@@ -394,10 +394,11 @@ void resize(int width, int height)
     // 4. Far
     gluPerspective(45.0f, (GLdouble)width/(GLdouble)height, 0.1f, 100.0f);
 
-    // frustrun
-    //double H = tan((45.0/2.0)/ 180*3.14)*0.1f;
-    //double W = H *  (GLdouble)width/(GLdouble)height;
-    //glFrustum(-W, W, -H, H, -0.1, 100.0f);
+    // // frustrun
+    // GLdouble angle = 45.0f * (3.14f/180.0f);
+    // GLdouble H = tan(angle/2.0)*(0.1f);
+    // GLdouble W = H * ((GLdouble)width/(GLdouble)height);
+    // glFrustum(-W, W, -H, H, 0.1, 100.0f);
 
 }
 
@@ -413,7 +414,7 @@ void display(void)
     glLoadIdentity();
 
     // trasform drawing , push it forward
-    glTranslatef(0.0f, 0.0f, -3.0f);
+    glTranslatef(0.0f, 0.0f, -10.0f);
     
     // draw the trangle
     glBegin(GL_TRIANGLES);

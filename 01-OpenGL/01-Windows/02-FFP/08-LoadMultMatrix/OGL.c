@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES (1)
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -42,6 +43,16 @@ BOOL gbActiveWindow = FALSE;
 
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
+
+// rotation angles
+GLdouble gldAngleCube = 0.0f;
+
+float identiyMatrix[16];
+float translationMatrix[16];
+float scaleMatrix[16];
+float rotationMatrixX[16];
+float rotationMatrixY[16];
+float rotationMatrixZ[16];
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -302,8 +313,9 @@ int initialise(void)
     pfd.cGreenBits = 8;
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
+    pfd.cDepthBits = 32;
 
-    //get device context
+    //get devixe context
     ghdc = GetDC(ghwnd);
     if (ghdc == NULL)
     {
@@ -347,11 +359,74 @@ int initialise(void)
 
     //from here onwards opengl code starts
 
+
+    // depth related code
+    glShadeModel(GL_SMOOTH); // tell opengl to use smoothness whilde shading
+    glClearDepth(1.0f); // depth buffer to 1.0
+    glEnable(GL_DEPTH_TEST); // enable depth test
+    glDepthFunc(GL_LEQUAL); // pass the fragments whose values are less than are equal to glClear depth
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // whenever some shapes are deterioted due to prespective projection and depth, give them nicest appearance
+
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
+
+    // define matrices
+    // identity matrix
+    identiyMatrix[0] = 1.0f;
+    identiyMatrix[1] = 0.0f;
+    identiyMatrix[2] = 0.0f;
+    identiyMatrix[3] = 0.0f;
+    identiyMatrix[4] = 0.0f;
+    identiyMatrix[5] = 1.0f;
+    identiyMatrix[6] = 0.0f;
+    identiyMatrix[7] = 0.0f;
+    identiyMatrix[8] = 0.0f;
+    identiyMatrix[9] = 0.0f;
+    identiyMatrix[10]= 1.0f;
+    identiyMatrix[11]= 0.0f;
+    identiyMatrix[12]= 0.0f;
+    identiyMatrix[13]= 0.0f;
+    identiyMatrix[14]= 0.0f;
+    identiyMatrix[15]= 1.0f;
+
+    // translation matrix
+    translationMatrix[0] = 1.0f;
+    translationMatrix[1] = 0.0f;
+    translationMatrix[2] = 0.0f;
+    translationMatrix[3] = 0.0f;
+    translationMatrix[4] = 0.0f;
+    translationMatrix[5] = 1.0f;
+    translationMatrix[6] = 0.0f;
+    translationMatrix[7] = 0.0f;
+    translationMatrix[8] = 0.0f;
+    translationMatrix[9] = 0.0f;
+    translationMatrix[10] = 1.0f;
+    translationMatrix[11] = 0.0f;
+    translationMatrix[12] = 0.0f; // glTranslatef X
+    translationMatrix[13] = 0.0f; // glTranslated y
+    translationMatrix[14] = -6.0f; // glTranslate z
+    translationMatrix[15] = 1.0f;
+
+    // scale matrix
+    scaleMatrix[0] = 0.75f;
+    scaleMatrix[1] = 0.0f;
+    scaleMatrix[2] = 0.0f;
+    scaleMatrix[3] = 0.0f;
+    scaleMatrix[4] = 0.0f;
+    scaleMatrix[5] = 0.75f;
+    scaleMatrix[6] = 0.0f;
+    scaleMatrix[7] = 0.0f;
+    scaleMatrix[8] = 0.0f;
+    scaleMatrix[9] = 0.0f;
+    scaleMatrix[10] = 0.75f;
+    scaleMatrix[11] = 0.0f;
+    scaleMatrix[12]= 0.0f;
+    scaleMatrix[13]= 0.0f;
+    scaleMatrix[14]= 0.0f;
+    scaleMatrix[15]= 1.0f;
 
     return 0;
 }
@@ -403,60 +478,207 @@ void resize(int width, int height)
 
 void display(void)
 {
+    // variable declarations
+    float angle = 0.0f;
+    // all angles in OpenGL are expressed in radians
+
+
     //code
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // set matrix model view mode
     glMatrixMode(GL_MODELVIEW);
 
     // set  to identity matrix
-    glLoadIdentity();
+    //glLoadIdentity();
+    glLoadMatrixf(identiyMatrix);
 
-    // transform drawing , push it backwards and left
-    glTranslatef(-1.5f, 0.0f, -6.0f);
+
+    //glTranslatef(0.0f, 0.0f, -6.0f);
+    glMultMatrixf(translationMatrix);
     
-    // draw the triangle
-    glBegin(GL_TRIANGLES);
-    
-        // appex
+    //glRotatef(gldAngleCube, 1.0f, 1.0f, 1.0f);
+    //glRotatef(gldAngleCube, 0.0f, 1.0f, 0.0f);
+    //glRotatef(gldAngleCube, 0.0f, 0.0f, 1.0f);
+    angle = (gldAngleCube) * (M_PI / 180.0f);  // convert degree to radians
+
+    // X rotation matrix
+    rotationMatrixX[0] = 1.0f;
+    rotationMatrixX[1] = 0.0f;
+    rotationMatrixX[2] = 0.0f;
+    rotationMatrixX[3] = 0.0f;
+    rotationMatrixX[4] = 0.0f;
+    rotationMatrixX[5] = cos(angle);
+    rotationMatrixX[6] = sin(angle);
+    rotationMatrixX[7] = 0.0f;
+    rotationMatrixX[8] = 0.0f;
+    rotationMatrixX[9] = -sin(angle);
+    rotationMatrixX[10] = cos(angle);
+    rotationMatrixX[11] = 0.0f;
+    rotationMatrixX[12] = 0.0f;
+    rotationMatrixX[13] = 0.0f;
+    rotationMatrixX[14] = 0.0f;
+    rotationMatrixX[15] = 1.0f;
+
+    // Y Rotation matrix
+    rotationMatrixY[0]= cos(angle);
+    rotationMatrixY[1]= 0.0f;
+    rotationMatrixY[2]= -sin(angle);
+    rotationMatrixY[3]= 0.0f;
+    rotationMatrixY[4]= 0.0f;
+    rotationMatrixY[5]= 1.0f;
+    rotationMatrixY[6]= 0.0f;
+    rotationMatrixY[7]= 0.0f;
+    rotationMatrixY[8]= sin(angle);
+    rotationMatrixY[9]= 0.0f;
+    rotationMatrixY[10]= cos(angle);
+    rotationMatrixY[11]= 0.0f;
+    rotationMatrixY[12]= 0.0f;
+    rotationMatrixY[13]= 0.0f;
+    rotationMatrixY[14]= 0.0f;
+    rotationMatrixY[15]= 1.0f;
+
+    // Z rotation matrix
+    rotationMatrixZ[0] = cos(angle);
+    rotationMatrixZ[1] = sin(angle);
+    rotationMatrixZ[2] = 0.0f;
+    rotationMatrixZ[3] = 0.0f;
+    rotationMatrixZ[4] = -sin(angle);
+    rotationMatrixZ[5] = cos(angle);
+    rotationMatrixZ[6] = 0.0f;
+    rotationMatrixZ[7] = 0.0f;
+    rotationMatrixZ[8] = 0.0f;
+    rotationMatrixZ[9] = 0.0f;
+    rotationMatrixZ[10] = 1.0f;
+    rotationMatrixZ[11] = 0.0f;
+    rotationMatrixZ[12] = 0.0f;
+    rotationMatrixZ[13] = 0.0f;
+    rotationMatrixZ[14] = 0.0f;
+    rotationMatrixZ[15] = 1.0f;
+
+    glMultMatrixf(rotationMatrixX);
+    glMultMatrixf(rotationMatrixY);
+    glMultMatrixf(rotationMatrixZ);
+
+    // draw the front face
+    glBegin(GL_QUADS);
+
         glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
         
-        // left bottom
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
+        // top right
+        glVertex3f(1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, 1.0f);
 
-        // right bottom
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, 1.0f);
 
     glEnd();
 
-    // draw the rectangle
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // set  to identity matrix
-    glLoadIdentity();
-
-    glTranslatef(1.5f, 0.0f, -6.0f);
-
+    // draw the back face
     glBegin(GL_QUADS);
 
-       glColor3f(0.0f, 0.0f, 1.0f);
-       
-       // top right
-       glVertex3f(1.0f, 1.0f, 0.0f);
-       
-       // top left
-       glVertex3f(-1.0f, 1.0f, 0.0f);
-   
-       // bottom right
-       glVertex3f(-1.0f, -1.0f, 0.0f);
-   
-       // bottom left
-       glVertex3f(1.0f, -1.0f, 0.0f);
-   
+        glColor3f(0.0f, 0.0f, 1.0f);
+
+        // top right
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // bottom left
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+        // draw the right face
+    glBegin(GL_QUADS);
+
+        glColor3f(0.0f, 1.0f, 0.0f);
+        
+        // top right
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+        // bottom left
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+    // draw the left face
+    glBegin(GL_QUADS);
+
+        glColor3f(0.0f, 1.0f, 1.0f);
+
+        // top right
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+
+    // draw Top face
+
+    glBegin(GL_QUADS);
+        // magenta
+        glColor3f(1.0f, 0.0f, 1.0f);
+
+        // top right
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+    glEnd();
+
+  
+    // draw Bottom face
+    glBegin(GL_QUADS);
+
+        // yellow
+        glColor3f(1.0f, 1.0f, 0.0f);
+
+        // top right
+        glVertex3f(1.0f, -1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
     glEnd();
 
     SwapBuffers(ghdc);
@@ -465,6 +687,13 @@ void display(void)
 void update(void)
 {
     //code
+    
+    gldAngleCube = gldAngleCube - 1.0f;
+    if (gldAngleCube <= 0)
+    {
+        gldAngleCube = 360.0f;
+    }
+
 }
 void uninitialise(void)
 {

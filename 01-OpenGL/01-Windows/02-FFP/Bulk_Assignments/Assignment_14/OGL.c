@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -14,6 +15,27 @@
 #pragma comment(lib, "opengl32.lib") // Import library
 #pragma comment(lib, "glu32.lib") // Import library
 
+
+// structure declarations
+typedef struct 
+{
+    float x;
+    float y;
+    float z;
+}my_co_ordinates_t;
+
+typedef struct 
+{
+    float r;
+    float g;
+    float b;
+}my_color_t;
+
+typedef struct {
+    my_co_ordinates_t cords;
+    my_color_t color;
+}my_point_t;
+
 // OpenGL related global variables
 HDC ghdc = NULL;   // handle to device context
 HGLRC ghrc = NULL; // handle to graphics library rendering context
@@ -25,6 +47,16 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define WIN_WIDTH  (800)
 #define WIN_HEIGHT (600)
 
+#define RED_COLOR 1.0f, 0.0f, 0.0f
+#define GREEN_COLOR 0.0f, 1.0f, 0.0f
+#define BLUE_COLOR 0.0f, 0.0f, 1.0f
+#define YELLOW_COLOR 1.0f, 1.0f, 0.0f
+#define CYAN_COLOR 0.0f, 1.0f, 1.0f
+#define MAGENTA_COLOR 1.0f, 0.0f, 1.0f
+#define WHITE_COLOR 1.0f, 1.0f, 1.0f
+#define PURPLE_COLOR 0.5f, 0.0f, 0.5f
+#define GREY_COLOR 0.5f, 0.5f, 0.5f
+#define ORANGE_COLOR 1.0f, 0.5f, 0.0f
 
 // global variable declarations
 // variables related to fullscreen
@@ -42,6 +74,9 @@ BOOL gbActiveWindow = FALSE;
 
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
+
+// circle premitive
+GLenum gCircleMode = GL_POINTS;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -92,7 +127,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     RegisterClassEx(&wndclass);
 
     // create window
-    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Vishvanath Adhav"), 
+    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Adhav. Assignment-14"), 
                         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
                         GetSystemMetrics(SM_CXSCREEN)/2 - WIN_WIDTH/2,
                         GetSystemMetrics(SM_CYSCREEN)/2 - WIN_HEIGHT/2, 
@@ -202,6 +237,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     gbFullScreen = FALSE;
                 }
                 break;
+
+            case 'P':
+            case 'p':
+                gCircleMode = GL_POINTS;
+                break;
+
+            case 'L':
+            case 'l':
+                gCircleMode = GL_LINE_LOOP;
+                break;
+
             default:
                 break;
         }
@@ -223,6 +269,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         return (0);
     
     case WM_SIZE:
+        fprintf(gpFile, "WM_SIZE\n");
+
         resize(LOWORD(lParam), HIWORD(lParam));
         break;
 
@@ -289,6 +337,7 @@ int initialise(void)
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
     int iPixelFormatIndex = 0;
+    RECT rect;
 
     //code
     // pixel format descriptor initialization
@@ -303,7 +352,7 @@ int initialise(void)
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
 
-    //get device context
+    //get devixe context
     ghdc = GetDC(ghwnd);
     if (ghdc == NULL)
     {
@@ -331,14 +380,14 @@ int initialise(void)
     ghrc = wglCreateContext(ghdc); // wgl* are bridging API
     if (ghrc == NULL)
     {
-        fprintf(gpFile, "wglCreateContext() failed");
+        fprintf(gpFile, "wglCreateContext() failed\n");
         return -4;
     }
 
     // make this rendering conext as current context
     if (wglMakeCurrent(ghdc, ghrc) == FALSE)
     {
-        fprintf(gpFile, "wglMakeCurrent() failed");
+        fprintf(gpFile, "wglMakeCurrent() failed\n");
         return -5; 
     }
 
@@ -351,8 +400,9 @@ int initialise(void)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // warm up resize
-    resize(WIN_WIDTH, WIN_HEIGHT);
-
+    fprintf(gpFile, "Warm up\n");
+    GetClientRect(ghwnd, &rect);
+    resize(rect.right - rect.left, rect.bottom - rect.top);
     return 0;
 }
 
@@ -371,6 +421,7 @@ void printGLInfo(void)
 
 void resize(int width, int height)
 {
+    fprintf(gpFile, "width : %d, height : %d\n", width, height);
     //code
     // if height by accident becomes 0 or less then make height 1
     if (height <= 0)
@@ -394,7 +445,7 @@ void resize(int width, int height)
     // 4. Far
     gluPerspective(45.0f, (GLdouble)width/(GLdouble)height, 0.1f, 100.0f);
 
-    // frustrun
+    // frustrum
     //double H = tan((45.0/2.0)/ 180*3.14)*0.1f;
     //double W = H *  (GLdouble)width/(GLdouble)height;
     //glFrustum(-W, W, -H, H, -0.1, 100.0f);
@@ -403,61 +454,33 @@ void resize(int width, int height)
 
 void display(void)
 {
+    // function declaration
+    void drawUnitCircleAroundOrigin(my_color_t color);
+    // variable declaration
+    my_color_t color[10] = { RED_COLOR, GREEN_COLOR, BLUE_COLOR, CYAN_COLOR, MAGENTA_COLOR, \
+                              YELLOW_COLOR, WHITE_COLOR, PURPLE_COLOR, GREY_COLOR, ORANGE_COLOR};
     //code
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
+    // Draw Traingle whose centroid is at origin
+    for (int index = 0; index < 10; index++)
+    {
+        float offset = 0.08f * index;
+        // set matrix model view mode
+        glMatrixMode(GL_MODELVIEW);
 
-    // set  to identity matrix
-    glLoadIdentity();
+        // set  to identity matrix
+        glLoadIdentity();
 
-    // transform drawing , push it backwards and left
-    glTranslatef(-1.5f, 0.0f, -6.0f);
-    
-    // draw the triangle
-    glBegin(GL_TRIANGLES);
-    
-        // appex
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        
-        // left bottom
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
-
-        // right bottom
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
-
-    glEnd();
-
-    // draw the rectangle
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // set  to identity matrix
-    glLoadIdentity();
-
-    glTranslatef(1.5f, 0.0f, -6.0f);
-
-    glBegin(GL_QUADS);
-
-       glColor3f(0.0f, 0.0f, 1.0f);
-       
-       // top right
-       glVertex3f(1.0f, 1.0f, 0.0f);
-       
-       // top left
-       glVertex3f(-1.0f, 1.0f, 0.0f);
+        // trasform drawing ,push it forward
+        glTranslatef(0.0f, 0.0f, -3.0f);
    
-       // bottom right
-       glVertex3f(-1.0f, -1.0f, 0.0f);
-   
-       // bottom left
-       glVertex3f(1.0f, -1.0f, 0.0f);
-   
-    glEnd();
+        glLineWidth(1.0f);
+
+        glScalef(0.8f - offset, 0.8f - offset, 1.0f);
+
+        drawUnitCircleAroundOrigin(color[index]);
+    }
 
     SwapBuffers(ghdc);
 }
@@ -511,4 +534,21 @@ void uninitialise(void)
         fclose(gpFile);
         gpFile = NULL;
     }
+}
+
+void drawUnitCircleAroundOrigin(my_color_t color)
+{
+
+    // variable declaration
+    float x, y;
+
+    glColor3f(color.r, color.g, color.b);
+    glBegin(gCircleMode);
+    for(float angle = 0.0f; angle < 2 * M_PI; angle += 0.005f)
+    {
+        x = cos(angle);
+        y = sin(angle);
+        glVertex3f(x, y, 0.0f);
+    }
+    glEnd();
 }

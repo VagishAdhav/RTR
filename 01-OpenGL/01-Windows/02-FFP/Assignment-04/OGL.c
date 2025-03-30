@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES (1)
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -42,6 +43,9 @@ BOOL gbActiveWindow = FALSE;
 
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
+
+// rotation angles
+GLdouble gldAnglePyramid = 0.0f;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -302,8 +306,9 @@ int initialise(void)
     pfd.cGreenBits = 8;
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
+    pfd.cDepthBits = 32;
 
-    //get device context
+    //get devixe context
     ghdc = GetDC(ghwnd);
     if (ghdc == NULL)
     {
@@ -313,6 +318,7 @@ int initialise(void)
 
     // get matching pixel format index using hdc and pfd
     iPixelFormatIndex = ChoosePixelFormat(ghdc, &pfd);
+
 
     if(iPixelFormatIndex == 0)
     {
@@ -346,6 +352,13 @@ int initialise(void)
     printGLInfo();
 
     //from here onwards opengl code starts
+
+    // depth related code
+    glShadeModel(GL_SMOOTH); // tell opengl to use smoothness whilde shading
+    glClearDepth(1.0f); // depth buffer to 1.0
+    glEnable(GL_DEPTH_TEST); // enable depth test
+    glDepthFunc(GL_LEQUAL); // pass the fragments whose values are less than are equal to glClear depth
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // whenever some shapes are deterioted due to prespective projection and depth, give them nicest appearance
 
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -403,8 +416,13 @@ void resize(int width, int height)
 
 void display(void)
 {
+    // function declaration
+    void drawPyramid(void);
+    void drawCube(void);
+    // variable declaration
+    float angle;
     //code
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // set matrix model view mode
     glMatrixMode(GL_MODELVIEW);
@@ -412,52 +430,21 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    // transform drawing , push it backwards and left
-    glTranslatef(-1.5f, 0.0f, -6.0f);
-    
-    // draw the triangle
-    glBegin(GL_TRIANGLES);
-    
-        // appex
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        
-        // left bottom
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
 
-        // right bottom
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
+    //gluLookAt(6.0f * sin(angle), 0.0f, 6.0f * cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    // trasform drawing , push it forward
+    glTranslatef(0.0f, 0.0f, -9.0f);
+    glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+    drawPyramid();
 
-    glEnd();
-
-    // draw the rectangle
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // set  to identity matrix
     glLoadIdentity();
+    angle = (gldAnglePyramid) * (M_PI / 180.0f);  // convert degree to radians
+    gluLookAt(6.0f * sin(angle), 0.0f, 6.0f * cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    glTranslatef(0.0f, 0.0f, -4.0f);
+    glScalef(0.5f, 0.5f, 0.5f);
+    //glRotatef(gldAnglePyramid, 0.0f, 1.0f, 0.0f);
+    drawCube();
 
-    glTranslatef(1.5f, 0.0f, -6.0f);
-
-    glBegin(GL_QUADS);
-
-       glColor3f(0.0f, 0.0f, 1.0f);
-       
-       // top right
-       glVertex3f(1.0f, 1.0f, 0.0f);
-       
-       // top left
-       glVertex3f(-1.0f, 1.0f, 0.0f);
-   
-       // bottom right
-       glVertex3f(-1.0f, -1.0f, 0.0f);
-   
-       // bottom left
-       glVertex3f(1.0f, -1.0f, 0.0f);
-   
-    glEnd();
 
     SwapBuffers(ghdc);
 }
@@ -465,6 +452,13 @@ void display(void)
 void update(void)
 {
     //code
+
+    gldAnglePyramid = gldAnglePyramid + 2.0f;
+    if (gldAnglePyramid >= 360.0f)
+    {
+        gldAnglePyramid = 0.0f;
+    }
+
 }
 void uninitialise(void)
 {
@@ -511,4 +505,192 @@ void uninitialise(void)
         fclose(gpFile);
         gpFile = NULL;
     }
+}
+
+void drawPyramid(void)
+{
+        // front face of pyramid
+    glBegin(GL_TRIANGLES);
+        // appex
+        glColor3f(1.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+        
+        // left bottom
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // right bottom
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+    glEnd();
+
+    // right face of pyramid
+    glBegin(GL_TRIANGLES);
+        // appex
+        glColor3f(1.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+        
+        // left bottom
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+        // right bottom
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+    glEnd();
+
+    // back face of pyramid
+    glBegin(GL_TRIANGLES);
+        // appex
+        glColor3f(1.0f, 0.0f, 0.0f);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+        
+        // left bottom
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+        // right bottom
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+    glEnd();
+
+   
+     // left face of pyramid
+     glBegin(GL_TRIANGLES);
+         // appex
+         glColor3f(1.0f, 0.0f, 0.0f);
+         glVertex3f(0.0f, 1.0f, 0.0f);
+      
+         // left bottom
+         glColor3f(0.0f, 0.0f, 1.0f);
+         glVertex3f(-1.0f, -1.0f, -1.0f);
+
+         // right bottom
+         glColor3f(0.0f, 1.0f, 0.0f);
+         glVertex3f(-1.0f, -1.0f, 1.0f);
+     glEnd();
+}
+
+
+void drawCube(void)
+{
+     glBegin(GL_QUADS);
+
+        glColor3f(1.0f, 0.0f, 0.0f);
+        
+        // top right
+        glVertex3f(1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+    // draw the back face
+    glBegin(GL_QUADS);
+
+        glColor3f(0.0f, 0.0f, 1.0f);
+
+        // top right
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // bottom left
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+        // draw the right face
+    glBegin(GL_QUADS);
+
+        glColor3f(0.0f, 1.0f, 0.0f);
+        
+        // top right
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+        // bottom left
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+    // draw the left face
+    glBegin(GL_QUADS);
+
+        glColor3f(0.0f, 1.0f, 1.0f);
+
+        // top right
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+
+    // draw Top face
+
+    glBegin(GL_QUADS);
+        // magenta
+        glColor3f(1.0f, 0.0f, 1.0f);
+
+        // top right
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+    glEnd();
+
+  
+    // draw Bottom face
+    glBegin(GL_QUADS);
+
+        // yellow
+        glColor3f(1.0f, 1.0f, 0.0f);
+
+        // top right
+        glVertex3f(1.0f, -1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glEnd();
 }

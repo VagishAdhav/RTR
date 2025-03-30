@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -25,6 +26,10 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define WIN_WIDTH  (800)
 #define WIN_HEIGHT (600)
 
+#define SHOW_TRIANGLE (0x01)
+#define SHOW_SQUARE   (0x02)
+#define SHOW_CIRCLE   (0x04)
+#define SHOW_GRAPTH   (0x08)
 
 // global variable declarations
 // variables related to fullscreen
@@ -42,6 +47,11 @@ BOOL gbActiveWindow = FALSE;
 
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
+
+// shapes visibility
+unsigned int gVisibilityControl = 0x0F;
+// circle premitive
+GLenum gCircleMode = GL_POINTS;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -92,7 +102,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     RegisterClassEx(&wndclass);
 
     // create window
-    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Vishvanath Adhav"), 
+    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Adhav. Assignment-10"), 
                         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
                         GetSystemMetrics(SM_CXSCREEN)/2 - WIN_WIDTH/2,
                         GetSystemMetrics(SM_CYSCREEN)/2 - WIN_HEIGHT/2, 
@@ -202,6 +212,37 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     gbFullScreen = FALSE;
                 }
                 break;
+
+            case 'T':
+            case 't':
+                gVisibilityControl ^= SHOW_TRIANGLE;
+                break;
+            case 'S':
+            case 's':
+                gVisibilityControl ^= SHOW_SQUARE;
+                break;
+            case 'C':
+            case 'c':
+                gVisibilityControl ^= SHOW_CIRCLE;
+                break;
+            case 'G':
+            case 'g':
+                gVisibilityControl ^= SHOW_GRAPTH;
+                break;
+            case '0':
+                gVisibilityControl = 0;
+                break;
+                
+            case 'P':
+            case 'p':
+                gCircleMode = GL_POINTS;
+                break;
+
+            case 'L':
+            case 'l':
+                gCircleMode = GL_LINE_LOOP;
+                break;
+            
             default:
                 break;
         }
@@ -223,6 +264,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         return (0);
     
     case WM_SIZE:
+        fprintf(gpFile, "WM_SIZE\n");
+
         resize(LOWORD(lParam), HIWORD(lParam));
         break;
 
@@ -289,6 +332,7 @@ int initialise(void)
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
     int iPixelFormatIndex = 0;
+    RECT rect;
 
     //code
     // pixel format descriptor initialization
@@ -303,7 +347,7 @@ int initialise(void)
     pfd.cBlueBits = 8;
     pfd.cAlphaBits = 8;
 
-    //get device context
+    //get devixe context
     ghdc = GetDC(ghwnd);
     if (ghdc == NULL)
     {
@@ -331,14 +375,14 @@ int initialise(void)
     ghrc = wglCreateContext(ghdc); // wgl* are bridging API
     if (ghrc == NULL)
     {
-        fprintf(gpFile, "wglCreateContext() failed");
+        fprintf(gpFile, "wglCreateContext() failed\n");
         return -4;
     }
 
     // make this rendering conext as current context
     if (wglMakeCurrent(ghdc, ghrc) == FALSE)
     {
-        fprintf(gpFile, "wglMakeCurrent() failed");
+        fprintf(gpFile, "wglMakeCurrent() failed\n");
         return -5; 
     }
 
@@ -351,8 +395,9 @@ int initialise(void)
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     // warm up resize
-    resize(WIN_WIDTH, WIN_HEIGHT);
-
+    fprintf(gpFile, "Warm up\n");
+    GetClientRect(ghwnd, &rect);
+    resize(rect.right - rect.left, rect.bottom - rect.top);
     return 0;
 }
 
@@ -371,6 +416,7 @@ void printGLInfo(void)
 
 void resize(int width, int height)
 {
+    fprintf(gpFile, "width : %d, height : %d\n", width, height);
     //code
     // if height by accident becomes 0 or less then make height 1
     if (height <= 0)
@@ -403,6 +449,11 @@ void resize(int width, int height)
 
 void display(void)
 {
+    //function declaration
+    void drawUnitCircleAroundOrigin(void);
+    void drawEquilateralTriangleAroundUnitCircle(void);
+    void drawStick(void);
+
     //code
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -412,52 +463,16 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    // transform drawing , push it backwards and left
-    glTranslatef(-1.5f, 0.0f, -6.0f);
-    
-    // draw the triangle
-    glBegin(GL_TRIANGLES);
-    
-        // appex
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        
-        // left bottom
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
+    // trasform drawing ,push it forward
+    glTranslatef(0.0f, 0.0f, -3.0f);
 
-        // right bottom
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
+    glScalef(0.3f, 0.3f, 1.0f);
+    // yellow/gold
+    glColor3f(1.000f, 0.843f, 0.000f);
 
-    glEnd();
-
-    // draw the rectangle
-    // set matrix model view mode
-    glMatrixMode(GL_MODELVIEW);
-
-    // set  to identity matrix
-    glLoadIdentity();
-
-    glTranslatef(1.5f, 0.0f, -6.0f);
-
-    glBegin(GL_QUADS);
-
-       glColor3f(0.0f, 0.0f, 1.0f);
-       
-       // top right
-       glVertex3f(1.0f, 1.0f, 0.0f);
-       
-       // top left
-       glVertex3f(-1.0f, 1.0f, 0.0f);
-   
-       // bottom right
-       glVertex3f(-1.0f, -1.0f, 0.0f);
-   
-       // bottom left
-       glVertex3f(1.0f, -1.0f, 0.0f);
-   
-    glEnd();
+    drawUnitCircleAroundOrigin();
+    drawEquilateralTriangleAroundUnitCircle();
+    drawStick();
 
     SwapBuffers(ghdc);
 }
@@ -511,4 +526,44 @@ void uninitialise(void)
         fclose(gpFile);
         gpFile = NULL;
     }
+}
+
+void drawUnitCircleAroundOrigin(void)
+{
+
+    glLineWidth(1.0f);
+    
+    // Yellow color
+    glColor3f(1.0f, 1.0f, 0.0f);
+    glBegin(gCircleMode);
+    float x, y;
+
+    for(float angle = 0.0f; angle < 2 * M_PI; angle += 0.005f)
+    {
+        x = cos(angle);
+        y = sin(angle);
+        glVertex3f(x, y, 0.0f);
+    }
+
+    glEnd();
+}
+
+void drawEquilateralTriangleAroundUnitCircle(void)
+{
+
+    /// calculations attached in the same directory
+    glBegin(GL_LINE_LOOP);
+        // apex 
+        glVertex3f(0.0f, 2.0f, 0.0f);
+        glVertex3f(-1.73f, -1.0f, 0.0f);
+        glVertex3f(1.73f,  -1.0f, 0.0f);
+    glEnd();
+}
+
+void drawStick(void)
+{
+    glBegin(GL_LINES);
+        glVertex3f(0.0f, 2.0f, 0.0f);
+        glVertex3f(0.0f, -1.0f, 0.0f);
+    glEnd();
 }
