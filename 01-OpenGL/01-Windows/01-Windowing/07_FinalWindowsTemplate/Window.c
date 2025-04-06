@@ -169,6 +169,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
     {
     
     case WM_CREATE:
+    // first call to WndProc is invoked through createWindowEX
         break;
     
     case WM_PAINT:
@@ -213,6 +214,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         break;
     
     case WM_SIZE:
+        // first time called through CreateWindowEx
         resize(LOWORD(lParam), HIWORD(lParam));
         break;
 

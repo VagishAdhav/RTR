@@ -212,37 +212,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     gbFullScreen = FALSE;
                 }
                 break;
-
-            case 'T':
-            case 't':
-                gVisibilityControl ^= SHOW_TRIANGLE;
-                break;
-            case 'S':
-            case 's':
-                gVisibilityControl ^= SHOW_SQUARE;
-                break;
-            case 'C':
-            case 'c':
-                gVisibilityControl ^= SHOW_CIRCLE;
-                break;
-            case 'G':
-            case 'g':
-                gVisibilityControl ^= SHOW_GRAPTH;
-                break;
-            case '0':
-                gVisibilityControl = 0;
-                break;
                 
-            case 'P':
-            case 'p':
-                gCircleMode = GL_POINTS;
-                break;
-
-            case 'L':
-            case 'l':
-                gCircleMode = GL_LINE_LOOP;
-                break;
-            
             default:
                 break;
         }

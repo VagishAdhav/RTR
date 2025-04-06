@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES (1)
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -414,7 +415,7 @@ void resize(int width, int height)
 void display(void)
 {
     //code
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // set matrix model view mode
     glMatrixMode(GL_MODELVIEW);
@@ -423,7 +424,7 @@ void display(void)
     glLoadIdentity();
 
     // trasform drawing , push it forward
-    glTranslatef(0.0f, 0.0f, -10.0f);
+    glTranslatef(0.0f, 0.0f, -3.0f);
     
     // draw the trangle
     glBegin(GL_TRIANGLES);
