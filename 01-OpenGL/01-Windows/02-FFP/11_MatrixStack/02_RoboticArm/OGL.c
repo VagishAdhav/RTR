@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES (1)
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -40,14 +41,13 @@ FILE *gpFile = NULL;
 // active window related variable
 BOOL gbActiveWindow = FALSE;
 
-// solar system related variables
-float year = 0;
-float date = 0;
-float moonRotation = 0.0f;
-GLUquadric *quadric = NULL;
-
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
+
+// robotic arm related variables
+int shoulder = 0;
+int elbow = 0;
+GLUquadric *quadric = NULL;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -209,6 +209,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                 }
                 break;
 
+            case 'S':
+                shoulder = (shoulder + 3) % 360;
+                break;
+
+            case 's':
+                shoulder = (shoulder - 3) % 360;
+                break;
+
+            case 'E':
+                elbow = (elbow + 3) % 360;
+                break;
+
+            case 'e':
+                elbow = (elbow - 3) % 360;
+                break;
+
             default:
                 break;
         }
@@ -366,11 +382,10 @@ int initialise(void)
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    // initialise quadric
-    quadric = gluNewQuadric();
-    
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
+
+    quadric = gluNewQuadric();
 
     return 0;
 }
@@ -432,74 +447,35 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    //do View Transformation
-    gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    // both arm and forarm are filled polygon
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    // save above transformation into model view matrix stack
+    // do basic translation common to both arm and forarm
+    glTranslatef(0.0f, 0.0f, -12.0f);
+
+    // push this matrix into matrix stack
     glPushMatrix();
+    // code for arm
 
-        // code for Sun
-        // adjust the poles of sphere of Sun
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+        glRotatef((GLfloat)shoulder, 0.0f, 0.0f, 1.0f);
+        glTranslatef(1.0f, 0.0f, 0.0f);
+        glPushMatrix();
+            glScalef(2.1f, 0.6f, 1.0f);
+            glColor3f(0.5f, 0.35f, 0.05f);
+            gluSphere(quadric, 0.5f, 10, 10);
+        glPopMatrix();
 
-        // set Sun's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // code for forarm
+        glTranslatef(1.0f, 0.0f, 0.0f);
+        glRotatef((GLfloat)elbow, 0.0f, 0.0f, 1.0f);
+        glTranslatef(1.0f, 0.0f, 0.0f);
+        glPushMatrix();
+            glScalef(2.1f, 0.6f, 1.0f);
+            glColor3f(0.5f, 0.35f, 0.05f);
+            gluSphere(quadric, 0.5f, 10, 10);
+        glPopMatrix();
 
-        // sett Sun's color
-        glColor3f(1.0f, 1.0f, 0.0f);
-
-        gluSphere(quadric, 0.75f, 30, 30);
-
-        // pop the matrix as we need to go back to origin to draw earth
-    glPopMatrix();
-
-    // save above transformation into model view matrix stackm matrix is now at look at position
-    glPushMatrix();
-        // code for earth   
-
-        // allow earth revolve around sun
-        glRotatef((GLfloat)year, 0.0f, 1.0f, 0.0f);
-        // allow earth move away from sun
-        glTranslatef(-1.5f, 0.0f, 0.0f);
-        // adjust the poles of sphere of Earth
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-
-        // allow earth spin around itself
-        glRotatef((GLfloat)date, 0.0f, 0.0f, 1.0f);
-
-        // set Earth's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        // set earth's color
-        glColor3f(0.4f, 0.9f, 1.0f);
-
-        // draw Earth
-        gluSphere(quadric, 0.2f, 20, 20);
-
-
-    glPopMatrix();
-
-    glPushMatrix();
-        //code for moon
-        // allow moon move away from sun to match earths 
-        glRotatef((GLfloat)year, 0.0f, 1.0f, 0.0f);
-        glTranslatef(-1.5f, 0.0f, 0.0f);
-        // allow moon revolve around earth
-        glRotatef(moonRotation, 0.0f, 1.0f, 0.0f);
-        // allow moon move away from EARTH
-        glTranslatef(0.35f, 0.0f, 0.0f);
-
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-
-         // set Moon's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        // set moon's color
-        glColor3f(0.5f, 0.5f, 0.5f);
-
-        // draw moon
-        gluSphere(quadric, 0.05f, 10, 10);
-
+    // common to both
 
     glPopMatrix();
 
@@ -508,26 +484,7 @@ void display(void)
 
 void update(void)
 {
-    //code#
-    moonRotation += 10.0f;
-    if (moonRotation >= 360.0f)
-    {
-        moonRotation = 0.0f;
-    }
-
-    year += 0.5f;
-    if (year >= 360.0f)
-    {
-        year = 0.0f;
-    }
-
-    
-    date += 3.65f;
-    if (date >= 360.0f)
-    {
-        date = 0.0f;
-    }
-
+    //code
 }
 void uninitialise(void)
 {
@@ -535,7 +492,6 @@ void uninitialise(void)
     void ToggleFullScreen(void);
 
     //code
-
     if (quadric)
     {
         gluDeleteQuadric(quadric);

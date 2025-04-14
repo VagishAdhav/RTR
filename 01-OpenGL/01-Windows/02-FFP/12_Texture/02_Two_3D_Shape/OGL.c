@@ -40,14 +40,80 @@ FILE *gpFile = NULL;
 // active window related variable
 BOOL gbActiveWindow = FALSE;
 
-// solar system related variables
-float year = 0;
-float date = 0;
-float moonRotation = 0.0f;
-GLUquadric *quadric = NULL;
-
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
+
+// rotation angles
+GLdouble gldAngleCube = 0.0f;
+GLdouble gldAnglePyramid = 0.0f;
+
+// texture related global variables
+GLuint textureStone;
+GLuint textureKundali;
+
+
+GLfloat pyramidTexcoords[] =
+{
+	// front
+	0.5, 1.0, // front-top
+	0.0, 0.0, // front-left
+	1.0, 0.0, // front-right
+
+	// right
+	0.5, 1.0, // right-top
+	1.0, 0.0, // right-left
+	0.0, 0.0, // right-right
+
+	// back
+	0.5, 1.0, // back-top
+	0.0, 0.0, // back-left
+	1.0, 0.0, // back-right
+
+	// left
+	0.5, 1.0, // left-top
+	1.0, 0.0, // left-left
+	0.0, 0.0, // left-right
+};
+
+GLfloat cubeTexcoords[] =
+{
+	// front
+	1.0f, 1.0f, // top-right of front
+	0.0f, 1.0f, // top-left of front
+	0.0f, 0.0f, // bottom-left of front
+	1.0f, 0.0f, // bottom-right of front
+
+	// right
+	1.0f, 1.0f, // top-right of right
+	0.0f, 1.0f, // top-left of right
+	0.0f, 0.0f, // bottom-left of right
+	1.0f, 0.0f, // bottom-right of right
+
+	// back
+	1.0f, 1.0f, // top-right of back
+	0.0f, 1.0f, // top-left of back
+	0.0f, 0.0f, // bottom-left of back
+	1.0f, 0.0f, // bottom-right of back
+
+	// left
+	1.0f, 1.0f, // top-right of left
+	0.0f, 1.0f, // top-left of left
+	0.0f, 0.0f, // bottom-left of left
+	1.0f, 0.0f, // bottom-right of left
+
+	// top
+	1.0f, 1.0f, // top-right of top
+	0.0f, 1.0f, // top-left of top
+	0.0f, 0.0f, // bottom-left of top
+	1.0f, 0.0f, // bottom-right of top
+
+	// bottom
+	1.0f, 1.0f, // top-right of bottom
+	0.0f, 1.0f, // top-left of bottom
+	0.0f, 0.0f, // bottom-left of bottom
+	1.0f, 0.0f, // bottom-right of bottom
+};
+
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -154,7 +220,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
         }
         else
         {
-            if(gbActiveWindow == TRUE)
+            //if(gbActiveWindow == TRUE)
             {
                 if(gbEscKeyIsPressed == TRUE)
                 {
@@ -208,7 +274,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     gbFullScreen = FALSE;
                 }
                 break;
-
             default:
                 break;
         }
@@ -292,6 +357,7 @@ int initialise(void)
     // function declarations
     void printGLInfo(void);
     void resize(int width, int height);
+    BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[]);
 
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
@@ -366,9 +432,23 @@ int initialise(void)
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    // initialise quadric
-    quadric = gluNewQuadric();
-    
+    // load textures
+    if (loadGLTexture(&textureStone, MAKEINTRESOURCE(ID_BITMAP_STONE)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_STONE\n");
+        return -6;
+    }
+
+    if (loadGLTexture(&textureKundali, MAKEINTRESOURCE(ID_BITMAP_KUNDALI)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_KUNDALI\n");
+        return -7;
+    }
+
+    // enable texturing
+    glEnable(GL_TEXTURE_2D);
+
+
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
 
@@ -387,6 +467,50 @@ void printGLInfo(void)
     fprintf(gpFile, "********************\n");
 }
 
+BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[])
+{
+    //variable declarations
+    HBITMAP hBitmap = NULL;
+    BITMAP bmp;
+    BOOL bResult = FALSE;
+
+    //code
+    //load the bitmap as image
+    hBitmap = LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+    if (hBitmap)
+    {
+        bResult = TRUE;
+        // get bitmap structure for the loaded bitmap image
+        GetObject(hBitmap, sizeof(BITMAP), &bmp);
+        // generate OpenGL texture object
+        glGenTextures(1, texture);
+        // bind to newly created texture object
+        glBindTexture(GL_TEXTURE_2D, *texture);
+        // unpack the image in memory for faster loading
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        // set texture parameter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+        // 1, binding point
+        // 2, no of components (3 colors)
+        // 3. width
+        // 4. height
+        // 5. format of image bata
+        // 6. type of bitmap data
+        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (void *)bmp.bmBits);
+
+        // unbind
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // delete object
+        DeleteObject(hBitmap);
+
+        hBitmap = NULL;
+    }
+
+    return bResult;
+}
 
 void resize(int width, int height)
 {
@@ -413,11 +537,10 @@ void resize(int width, int height)
     // 4. Far
     gluPerspective(45.0f, (GLdouble)width/(GLdouble)height, 0.1f, 100.0f);
 
-    // // frustrun
-    // GLdouble angle = 45.0f * (3.14f/180.0f);
-    // GLdouble H = tan(angle/2.0)*(0.1f);
-    // GLdouble W = H * ((GLdouble)width/(GLdouble)height);
-    // glFrustum(-W, W, -H, H, 0.1, 100.0f);
+    // frustrun
+    //double H = tan((45.0/2.0)/ 180*3.14)*0.1f;
+    //double W = H *  (GLdouble)width/(GLdouble)height;
+    //glFrustum(-W, W, -H, H, -0.1, 100.0f);
 
 }
 
@@ -432,100 +555,243 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    //do View Transformation
-    gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    glTranslatef(1.5f, 0.0f, -8.0f);
+    
+    glRotatef(gldAngleCube, 1.0f, 1.0f, 1.0f);
 
-    // save above transformation into model view matrix stack
-    glPushMatrix();
+    glBindTexture(GL_TEXTURE_2D, textureKundali);
+    //glRotatef(gldAngleCube, 0.0f, 1.0f, 0.0f);
+    //glRotatef(gldAngleCube, 0.0f, 0.0f, 1.0f);
+    // draw the front face
+    glBegin(GL_QUADS);
 
-        // code for Sun
-        // adjust the poles of sphere of Sun
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+        //glColor3f(1.0f, 1.0f, 1.0f);
+        
+        // top right
+        glTexCoord2f(cubeTexcoords[0], cubeTexcoords[1]);
+        glVertex3f(1.0f, 1.0f, 1.0f);
+        
+        // top left
+                glTexCoord2f(cubeTexcoords[2], cubeTexcoords[3]);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
 
-        // set Sun's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        // bottom left
+                glTexCoord2f(cubeTexcoords[4], cubeTexcoords[5]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
 
-        // sett Sun's color
-        glColor3f(1.0f, 1.0f, 0.0f);
+        // bottom right
+                glTexCoord2f(cubeTexcoords[6], cubeTexcoords[7]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
 
-        gluSphere(quadric, 0.75f, 30, 30);
+    glEnd();
 
-        // pop the matrix as we need to go back to origin to draw earth
-    glPopMatrix();
+    // draw the back face
+    glBegin(GL_QUADS);
 
-    // save above transformation into model view matrix stackm matrix is now at look at position
-    glPushMatrix();
-        // code for earth   
+        // top right
+                glTexCoord2f(cubeTexcoords[8], cubeTexcoords[9]);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+        // top left
+                glTexCoord2f(cubeTexcoords[10], cubeTexcoords[11]);
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // bottom left
+                glTexCoord2f(cubeTexcoords[12], cubeTexcoords[13]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
 
-        // allow earth revolve around sun
-        glRotatef((GLfloat)year, 0.0f, 1.0f, 0.0f);
-        // allow earth move away from sun
-        glTranslatef(-1.5f, 0.0f, 0.0f);
-        // adjust the poles of sphere of Earth
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+        // bottom right
+                glTexCoord2f(cubeTexcoords[14], cubeTexcoords[15]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
 
-        // allow earth spin around itself
-        glRotatef((GLfloat)date, 0.0f, 0.0f, 1.0f);
+    glEnd();
 
-        // set Earth's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // draw the right face
+    glBegin(GL_QUADS);
 
-        // set earth's color
-        glColor3f(0.4f, 0.9f, 1.0f);
+       
+        // top right
+        glTexCoord2f(cubeTexcoords[16], cubeTexcoords[17]);
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[18], cubeTexcoords[19]);
+        glVertex3f(1.0f, 1.0f, 1.0f);
 
-        // draw Earth
-        gluSphere(quadric, 0.2f, 20, 20);
+        // bottom left
+        glTexCoord2f(cubeTexcoords[20], cubeTexcoords[21]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[22], cubeTexcoords[23]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+    // draw the left face
+    glBegin(GL_QUADS);
+
+        // top right
+        glTexCoord2f(cubeTexcoords[24], cubeTexcoords[25]);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[26], cubeTexcoords[27]);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[28], cubeTexcoords[29]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[30], cubeTexcoords[31]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+    glEnd();
 
 
-    glPopMatrix();
+    // draw Top face
 
-    glPushMatrix();
-        //code for moon
-        // allow moon move away from sun to match earths 
-        glRotatef((GLfloat)year, 0.0f, 1.0f, 0.0f);
-        glTranslatef(-1.5f, 0.0f, 0.0f);
-        // allow moon revolve around earth
-        glRotatef(moonRotation, 0.0f, 1.0f, 0.0f);
-        // allow moon move away from EARTH
-        glTranslatef(0.35f, 0.0f, 0.0f);
+    glBegin(GL_QUADS);
 
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+        // top right
+        glTexCoord2f(cubeTexcoords[32], cubeTexcoords[33]);
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[34], cubeTexcoords[35]);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
 
-         // set Moon's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        // bottom left
+        glTexCoord2f(cubeTexcoords[36], cubeTexcoords[37]);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
 
-        // set moon's color
-        glColor3f(0.5f, 0.5f, 0.5f);
+        // bottom right
+        glTexCoord2f(cubeTexcoords[38], cubeTexcoords[39]);
+        glVertex3f(1.0f, 1.0f, 1.0f);
 
-        // draw moon
-        gluSphere(quadric, 0.05f, 10, 10);
+    glEnd();
 
+  
+    // draw Bottom face
+    glBegin(GL_QUADS);
 
-    glPopMatrix();
+        // top right
+        glTexCoord2f(cubeTexcoords[40], cubeTexcoords[41]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[42], cubeTexcoords[43]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[44], cubeTexcoords[45]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[46], cubeTexcoords[47]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // set matrix model view mode
+    glMatrixMode(GL_MODELVIEW);
+
+    // set  to identity matrix
+    glLoadIdentity();
+
+    // trasform drawing , push it backwaord
+    glTranslatef(-1.5f, 0.0f, -6.0f);
+
+    glRotatef(gldAnglePyramid, 0.0f, 1.0f, 0.0f);
+
+    glBindTexture(GL_TEXTURE_2D, textureStone);
+    
+    // front face of pyramid
+    glBegin(GL_TRIANGLES);
+        // appex
+        glTexCoord2f(pyramidTexcoords[0], pyramidTexcoords[1]);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+        
+        // left bottom
+        glTexCoord2f(pyramidTexcoords[2], pyramidTexcoords[3]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // right bottom
+        glTexCoord2f(pyramidTexcoords[4], pyramidTexcoords[5]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+    glEnd();
+
+    // right face of pyramid
+    glBegin(GL_TRIANGLES);
+        // appex
+        glTexCoord2f(pyramidTexcoords[6], pyramidTexcoords[7]);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+        
+        // left bottom
+        glTexCoord2f(pyramidTexcoords[8], pyramidTexcoords[9]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+        // right bottom
+        glTexCoord2f(pyramidTexcoords[10], pyramidTexcoords[11]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+    glEnd();
+
+    // back face of pyramid
+    glBegin(GL_TRIANGLES);
+        // appex
+        glTexCoord2f(pyramidTexcoords[12], pyramidTexcoords[13]);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+        
+        // left bottom
+        glTexCoord2f(pyramidTexcoords[14], pyramidTexcoords[15]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+        // right bottom
+        glTexCoord2f(pyramidTexcoords[16], pyramidTexcoords[17]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+    glEnd();
+
+   
+     // left face of pyramid
+     glBegin(GL_TRIANGLES);
+         // appex
+        glTexCoord2f(pyramidTexcoords[18], pyramidTexcoords[19]);
+        glVertex3f(0.0f, 1.0f, 0.0f);
+      
+               // left bottom
+        glTexCoord2f(pyramidTexcoords[20], pyramidTexcoords[21]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+         // right bottom
+        glTexCoord2f(pyramidTexcoords[22], pyramidTexcoords[23]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+     glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     SwapBuffers(ghdc);
 }
 
 void update(void)
 {
-    //code#
-    moonRotation += 10.0f;
-    if (moonRotation >= 360.0f)
-    {
-        moonRotation = 0.0f;
-    }
-
-    year += 0.5f;
-    if (year >= 360.0f)
-    {
-        year = 0.0f;
-    }
-
+    //code
     
-    date += 3.65f;
-    if (date >= 360.0f)
+    gldAngleCube = gldAngleCube - 2.0f;
+    if (gldAngleCube <= 0)
     {
-        date = 0.0f;
+        gldAngleCube = 360.0f;
+    }
+
+    gldAnglePyramid = gldAnglePyramid + 2.0f;
+    if (gldAnglePyramid >= 360.0f)
+    {
+        gldAnglePyramid = 0.0f;
     }
 
 }
@@ -535,17 +801,23 @@ void uninitialise(void)
     void ToggleFullScreen(void);
 
     //code
-
-    if (quadric)
-    {
-        gluDeleteQuadric(quadric);
-        quadric = NULL;
-    }
     // if exiting fullscreen restore to normal
     if (gbFullScreen == TRUE)
     {
         ToggleFullScreen();
         gbFullScreen = FALSE;
+    }
+
+    if (textureKundali)
+    {
+        glDeleteTextures(1, textureKundali);
+        textureKundali = 0;
+    }
+
+    if (textureStone)
+    {
+        glDeleteTextures(1, textureStone);
+        textureStone = 0;
     }
 
     //make hdc as current conext by releasing releasing renderring context as current context

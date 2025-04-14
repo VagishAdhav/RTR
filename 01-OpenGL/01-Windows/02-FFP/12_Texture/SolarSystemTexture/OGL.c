@@ -38,7 +38,7 @@ char gszLogFileName[] = "Log.txt";
 FILE *gpFile = NULL;
 
 // active window related variable
-BOOL gbActiveWindow = FALSE;
+BOOL gbActiveWindow = TRUE;
 
 // solar system related variables
 float year = 0;
@@ -49,6 +49,9 @@ GLUquadric *quadric = NULL;
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
 
+// texture related global variables
+GLuint textureEarth;
+GLuint textureMoon;
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
 {
@@ -58,6 +61,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     void display(void);
     void uninitialise(void);
     void update(void);
+    void ToggleFullScreen(void);
 
     // variable declaration
     WNDCLASSEX wndclass;
@@ -135,6 +139,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     // set this window as foreground and active window
     SetForegroundWindow(hwnd);
     SetFocus(hwnd);
+    //ToggleFullScreen();
 
 
     //game loop
@@ -292,6 +297,7 @@ int initialise(void)
     // function declarations
     void printGLInfo(void);
     void resize(int width, int height);
+    BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[]);
 
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
@@ -366,9 +372,23 @@ int initialise(void)
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+    // load textures
+    if (loadGLTexture(&textureEarth, MAKEINTRESOURCE(ID_BITMAP_EARTH)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_STONE\n");
+        return -6;
+    }
+
+    if (loadGLTexture(&textureMoon, MAKEINTRESOURCE(ID_BITMAP_MOON)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_KUNDALI\n");
+        return -7;
+    }
+
     // initialise quadric
     quadric = gluNewQuadric();
-    
+    gluQuadricTexture(quadric, GL_TRUE); // Enable texture capability
+
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
 
@@ -387,6 +407,50 @@ void printGLInfo(void)
     fprintf(gpFile, "********************\n");
 }
 
+BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[])
+{
+    //variable declarations
+    HBITMAP hBitmap = NULL;
+    BITMAP bmp;
+    BOOL bResult = FALSE;
+
+    //code
+    //load the bitmap as image
+    hBitmap = LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+    if (hBitmap)
+    {
+        bResult = TRUE;
+        // get bitmap structure for the loaded bitmap image
+        GetObject(hBitmap, sizeof(BITMAP), &bmp);
+        // generate OpenGL texture object
+        glGenTextures(1, texture);
+        // bind to newly created texture object
+        glBindTexture(GL_TEXTURE_2D, *texture);
+        // unpack the image in memory for faster loading
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        // set texture parameter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+        // 1, binding point
+        // 2, no of components (3 colors)
+        // 3. width
+        // 4. height
+        // 5. format of image bata
+        // 6. type of bitmap data
+        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (void *)bmp.bmBits);
+
+        // unbind
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // delete object
+        DeleteObject(hBitmap);
+
+        hBitmap = NULL;
+    }
+
+    return bResult;
+}
 
 void resize(int width, int height)
 {
@@ -436,6 +500,7 @@ void display(void)
     gluLookAt(0.0f, 0.0f, 5.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
     // save above transformation into model view matrix stack
+    glDisable(GL_TEXTURE_2D); // Turn off texturing
     glPushMatrix();
 
         // code for Sun
@@ -454,6 +519,8 @@ void display(void)
     glPopMatrix();
 
     // save above transformation into model view matrix stackm matrix is now at look at position
+    glEnable(GL_TEXTURE_2D); // Turn On texturing
+    glBindTexture(GL_TEXTURE_2D, textureEarth);
     glPushMatrix();
         // code for earth   
 
@@ -462,13 +529,13 @@ void display(void)
         // allow earth move away from sun
         glTranslatef(-1.5f, 0.0f, 0.0f);
         // adjust the poles of sphere of Earth
-        glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+        glRotatef(90.0f, -1.0f, 0.0f, 0.0f);
 
         // allow earth spin around itself
         glRotatef((GLfloat)date, 0.0f, 0.0f, 1.0f);
 
         // set Earth's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // set earth's color
         glColor3f(0.4f, 0.9f, 1.0f);
@@ -479,6 +546,8 @@ void display(void)
 
     glPopMatrix();
 
+    glEnable(GL_TEXTURE_2D); // Turn On texturing
+    glBindTexture(GL_TEXTURE_2D, textureMoon);
     glPushMatrix();
         //code for moon
         // allow moon move away from sun to match earths 
@@ -492,7 +561,7 @@ void display(void)
         glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
 
          // set Moon's polygon properties
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         // set moon's color
         glColor3f(0.5f, 0.5f, 0.5f);
@@ -509,20 +578,20 @@ void display(void)
 void update(void)
 {
     //code#
-    moonRotation += 10.0f;
+    moonRotation += 5.0f;
     if (moonRotation >= 360.0f)
     {
         moonRotation = 0.0f;
     }
 
-    year += 0.5f;
+    year += 0.4f;
     if (year >= 360.0f)
     {
         year = 0.0f;
     }
 
     
-    date += 3.65f;
+    date += 3.0f;
     if (date >= 360.0f)
     {
         date = 0.0f;
