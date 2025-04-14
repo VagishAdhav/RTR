@@ -503,9 +503,10 @@ void display(void)
         }
         else
         {
-            glTranslatef(PLANE_PIVOT_X, -PLANE_PIVOT_Y, 0.0f);
+
+            glTranslatef(PLANE_PIVOT_X + 0.5f, -PLANE_PIVOT_Y, 0.0f);
             glRotatef(gPlaneRotationRight, 0.0f, 0.0f, 1.0f);
-            glTranslatef(0.0f, 5.0f, 0.0f);
+            glTranslatef(-5.0f, 0.0f, 0.0f);
             drawPlane(cGreen);
         }
 
@@ -530,7 +531,7 @@ void update(void)
     {
         gPlaneTranslationX = gPlaneTranslationX + 0.1f;
     }
-    else if (gPlaneRotationRight >= -180.0f)
+    else if (gPlaneRotationRight >= -190.0f)
     {
         gPlaneRotationRight = gPlaneRotationRight - 0.2f;
     }
