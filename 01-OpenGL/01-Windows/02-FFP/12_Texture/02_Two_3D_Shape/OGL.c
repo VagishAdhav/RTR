@@ -220,7 +220,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
         }
         else
         {
-            //if(gbActiveWindow == TRUE)
+            if(gbActiveWindow == TRUE)
             {
                 if(gbEscKeyIsPressed == TRUE)
                 {
@@ -498,6 +498,7 @@ BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[])
         // 4. height
         // 5. format of image bata
         // 6. type of bitmap data
+        //(glTexImage2D + glGeneratemimap)
         gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (void *)bmp.bmBits);
 
         // unbind

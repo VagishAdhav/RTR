@@ -11,6 +11,12 @@
 #include <gl/GL.h>
 #include <gl/GLU.h>
 
+// media related includes and libraries
+#include <Mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")  
+
+
 // OpenGL related libraries
 #pragma comment(lib, "opengl32.lib") // Import library
 #pragma comment(lib, "glu32.lib") // Import library
@@ -69,7 +75,7 @@ char gszLogFileName[] = "Log.txt";
 FILE *gpFile = NULL;
 
 // active window related variable
-BOOL gbActiveWindow = FALSE;
+BOOL gbActiveWindow = TRUE;
 
 // esc key related variable
 BOOL gbEscKeyIsPressed = FALSE;
@@ -79,13 +85,13 @@ GLfloat gFontUpdateCnt = -5.0f;
 GLfloat gPlaneRotationLeft = 0.0f;
 GLfloat gPlaneRotationRight = -90.0f;
 GLfloat gPlaneTranslationX = -PLANE_PIVOT_X;
+GLfloat gCenterPlaneTranslationX = -PLANE_PIVOT_X - 5.5f;
 
 // color
 color cSaffron = {1.0f, 0.6f, 0.2f};
 color cGreen = {0.0745f, 0.5333f, 0.0314f};
 color cWhite = {1.0f, 1.0f, 1.0f};
-
-
+color cGray= {0.5f, 0.5f, 0.5f};
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -174,7 +180,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     // set this window as foreground and active window
     SetForegroundWindow(hwnd);
     SetFocus(hwnd);
-    ToggleFullScreen();
+    //ToggleFullScreen();
 
     //game loop
     while(bDone == FALSE)
@@ -406,6 +412,8 @@ int initialise(void)
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+    	PlaySound(TEXT("MeraRangDe.wav"), NULL, SND_ASYNC);
+
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
 
@@ -479,10 +487,9 @@ void display(void)
     // draw the Bharat
     drawBharat();
 
-
+    // draw planes
     if (gFontUpdateCnt >= 4.0f)
     {
-
         glPushMatrix();
         glScalef(0.25f, 0.25f, 1.0f);
         glPushMatrix();
@@ -503,16 +510,45 @@ void display(void)
         }
         else
         {
-
-            glTranslatef(PLANE_PIVOT_X + 0.5f, -PLANE_PIVOT_Y, 0.0f);
+            glTranslatef(PLANE_PIVOT_X, -PLANE_PIVOT_Y, 0.0f);
             glRotatef(gPlaneRotationRight, 0.0f, 0.0f, 1.0f);
             glTranslatef(-5.0f, 0.0f, 0.0f);
             drawPlane(cGreen);
         }
+        glPopMatrix();
+        glPushMatrix();
+        // draw top plane
+        GLfloat gTopPlaneRotationLeft = 180.0f - gPlaneRotationLeft;
+        GLfloat gTopPlaneRotationRight = 180.0f - gPlaneRotationRight;
+        if (gTopPlaneRotationLeft < 270.0f)
+        {
+             // rotate left part
+            glTranslatef(-PLANE_PIVOT_X, PLANE_PIVOT_Y, 0.0f);
+            glRotatef(gTopPlaneRotationLeft, 0.0f, 0.0f, 1.0f);
+            glTranslatef(5.0f, 0.0f, 0.0f);
+            drawPlane(cSaffron);
+        }
+        else if (gPlaneTranslationX <= PLANE_PIVOT_X)
+        {
+            glTranslatef(gPlaneTranslationX, 2.0f, 0.0f);
+            glRotatef(gTopPlaneRotationLeft, 0.0f, 0.0f, 1.0f);
+            drawPlane(cSaffron);
+        }
+        else
+        {
+            glTranslatef(PLANE_PIVOT_X, PLANE_PIVOT_Y, 0.0f);
+            glRotatef(gTopPlaneRotationRight, 0.0f, 0.0f, 1.0f);
+            glTranslatef(5.0f, 0.0f, 0.0f);
+            drawPlane(cSaffron);
+        }
+        glPopMatrix();
 
+        // draw middle plane
+        glTranslatef(gCenterPlaneTranslationX, 0.0f, 0.0f);
+        glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+        drawPlane(cWhite);
+        glPopMatrix();
     }
-    
-
     SwapBuffers(ghdc);
 }
 
@@ -521,20 +557,29 @@ void update(void)
     //code
     if (gFontUpdateCnt < 4.0f)
     {
-        gFontUpdateCnt = gFontUpdateCnt + 0.1f;
+        gFontUpdateCnt = gFontUpdateCnt + 0.01f;
     }
     else if (gPlaneRotationLeft >= -90.0f)
     {
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.01f;
         gPlaneRotationLeft = gPlaneRotationLeft - 0.2f;
     }
     else if (gPlaneTranslationX < PLANE_PIVOT_X)
     {
-        gPlaneTranslationX = gPlaneTranslationX + 0.1f;
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.02f;
+        gPlaneTranslationX = gPlaneTranslationX + 0.02f;
     }
-    else if (gPlaneRotationRight >= -190.0f)
+    else if (gPlaneRotationRight >= -220.0f)
     {
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.01f;
         gPlaneRotationRight = gPlaneRotationRight - 0.2f;
     }
+    else
+    {
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.01f;
+    }
+
+
 }
 
 void uninitialise(void)
@@ -671,10 +716,20 @@ void drawSemiEllipse(float faRadius[2], point pOrigin, float fStep, float fStart
     }
 }
 
-void drawB(void)
+void drawB(BOOL change_color)
 {
+    color cUpper = cGray;
+    color cLower = cGray;;
+    color cCenter = cGray;;
+    if (change_color)
+    {
+        cUpper = cSaffron;
+        cLower = cGreen;
+        cCenter = cWhite;
+    }
+
     // upper part fix color
-    glColor3f(1.0f, 0.6f, 0.2f);
+    glColor3f(cUpper.r, cUpper.g, cUpper.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH, FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS, FONT_HEIGHT, 0);
@@ -684,21 +739,20 @@ void drawB(void)
     glEnd();
 
     // upper part color gradiant
-
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(FONT_WIDTH - THICKNESS, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(FONT_WIDTH, FONT_HEIGHT - THICKNESS, 0);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(FONT_WIDTH, (THICKNESS * 0.7), 0);
         glVertex3f(FONT_WIDTH - THICKNESS, 0.0f, 0);
     glEnd();
 
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);;
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, FONT_HEIGHT - THICKNESS, 0);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, THICKNESS/2.0f, 0);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, THICKNESS/2.0f, 0);
     glEnd();
@@ -706,26 +760,27 @@ void drawB(void)
     // lower part, color gradiant
     // right
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(FONT_WIDTH - THICKNESS, 0.0f, 0);
         glVertex3f(FONT_WIDTH, -(THICKNESS * 0.7), 0);
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(FONT_WIDTH, -(FONT_HEIGHT - THICKNESS), 0);
         glVertex3f(FONT_WIDTH - THICKNESS, -(FONT_HEIGHT - THICKNESS), 0);
     glEnd();
+
     // left
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, -THICKNESS/2.0f, 0);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, -THICKNESS/2.0f, 0);
 
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, -(FONT_HEIGHT - THICKNESS), 0);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, -(FONT_HEIGHT - THICKNESS), 0);
     glEnd();
 
     // lower part fix color
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
+    glColor3f(cLower.r, cLower.g, cLower.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH, -FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS, -FONT_HEIGHT, 0);
@@ -735,22 +790,30 @@ void drawB(void)
     glEnd();
 
     // middle line fix color
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(cCenter.r, cCenter.g, cCenter.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1), THICKNESS/2.0f, 0);
         glVertex3f(FONT_WIDTH - THICKNESS, THICKNESS/2.0f, 0);
         glVertex3f(FONT_WIDTH - THICKNESS, -THICKNESS/2.0f, 0);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1), -THICKNESS/2.0f, 0);
     glEnd();
-
-
 }
 
-void drawH(void)
+void drawH(BOOL change_color)
 {
+    color cUpper = cGray;
+    color cLower = cGray;;
+    color cCenter = cGray;;
+    if (change_color)
+    {
+        cUpper = cSaffron;
+        cLower = cGreen;
+        cCenter = cWhite;
+    }
+
     // upper part fix color
     // left
-    glColor3f(1.0f, 0.6f, 0.2f);
+    glColor3f(cUpper.r, cUpper.g, cUpper.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH, FONT_HEIGHT, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS + (0.2 * FONT_WIDTH), FONT_HEIGHT, 0);
@@ -758,7 +821,7 @@ void drawH(void)
         glVertex3f(-FONT_WIDTH, FONT_HEIGHT - THICKNESS, 0);
     glEnd();
     // right
-    glColor3f(1.0f, 0.6f, 0.2f);
+    glColor3f(cUpper.r, cUpper.g, cUpper.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH, FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS - (0.2 * FONT_WIDTH), FONT_HEIGHT, 0);
@@ -769,49 +832,48 @@ void drawH(void)
     // uppere part color gradiant
     // left
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, FONT_HEIGHT - THICKNESS, 0);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, THICKNESS/2.0f, 0);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, THICKNESS/2.0f, 0);
     glEnd();
     // right
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.1, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1) - THICKNESS, FONT_HEIGHT - THICKNESS, 0);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1) - THICKNESS, THICKNESS/2.0f, 0);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.1, THICKNESS/2.0f, 0);
     glEnd();
 
-    
     // lower part color gradiant
     // left
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, -THICKNESS/2.0f, 0);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, -THICKNESS/2.0f, 0);
 
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, -FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
     // right
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.1, -THICKNESS/2.0f, 0);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1) - THICKNESS, -THICKNESS/2.0f, 0);
 
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1) - THICKNESS, -FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.1, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
 
     // lower part fix color
     //left
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
+    glColor3f(cLower.r, cLower.g, cLower.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH, -FONT_HEIGHT, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS + (0.2 * FONT_WIDTH), -FONT_HEIGHT, 0);
@@ -819,7 +881,7 @@ void drawH(void)
         glVertex3f(-FONT_WIDTH, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
     // right
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
+    glColor3f(cLower.r, cLower.g, cLower.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH, -FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS - (0.2 * FONT_WIDTH), -FONT_HEIGHT, 0);
@@ -828,7 +890,7 @@ void drawH(void)
     glEnd();
 
     // middle line fix color
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(cCenter.r, cCenter.g, cCenter.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1), THICKNESS/2.0f, 0);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1), THICKNESS/2.0f, 0);
@@ -838,11 +900,21 @@ void drawH(void)
 
 }
 
-void drawA(void)
+void drawA(BOOL change_color)
 {
+    color cUpper = cGray;
+    color cLower = cGray;;
+    color cCenter = cGray;;
+    if (change_color)
+    {
+        cUpper = cSaffron;
+        cLower = cGreen;
+        cCenter = cWhite;
+    }
+
     // upper part fix color
     // left
-    glColor3f(1.0f, 0.6f, 0.2f);
+    glColor3f(cUpper.r, cUpper.g, cUpper.b);
     glBegin(GL_POLYGON);
         glVertex3f(-THICKNESS/2.0f - (FONT_WIDTH*0.1), FONT_HEIGHT, 0);
         glVertex3f(THICKNESS/2.0f + (FONT_WIDTH*0.1), FONT_HEIGHT, 0);
@@ -853,31 +925,31 @@ void drawA(void)
     // upper part color gradiant
     // left
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(THICKNESS/2.0f, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(-THICKNESS/2.0f, FONT_HEIGHT - THICKNESS, 0);
 
         // center
-       glColor3f(1.0f, 1.0f, 1.0f);
-       glVertex3f(-FONT_WIDTH + THICKNESS, 0.0f, 0);
-       glVertex3f(-FONT_WIDTH + (1.9f *THICKNESS), 0.0f, 0);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
+        glVertex3f(-FONT_WIDTH + THICKNESS, 0.0f, 0);
+        glVertex3f(-FONT_WIDTH + (1.9f *THICKNESS), 0.0f, 0);
     glEnd();
 
     // Right
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(-THICKNESS/2.0f, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(+THICKNESS/2.0f, FONT_HEIGHT - THICKNESS, 0);
 
         // center
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(FONT_WIDTH - THICKNESS, 0.0f, 0);
         glVertex3f(FONT_WIDTH - (1.9f *THICKNESS), 0.0f, 0);
     glEnd();
 
     // lower part fix color
     //left
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
+    glColor3f(cLower.r, cLower.g, cLower.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH, -FONT_HEIGHT, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS + (0.2 * FONT_WIDTH), -FONT_HEIGHT, 0);
@@ -885,7 +957,7 @@ void drawA(void)
         glVertex3f(-FONT_WIDTH, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
     // right
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
+    glColor3f(cLower.r, cLower.g, cLower.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH, -FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS - (0.2 * FONT_WIDTH), -FONT_HEIGHT, 0);
@@ -894,7 +966,7 @@ void drawA(void)
     glEnd();
 
     // middle part white color
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(cCenter.r, cCenter.g, cCenter.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH - THICKNESS, 0.0f, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS, 0.0f, 0);
@@ -904,32 +976,41 @@ void drawA(void)
 
     // lower part color gradiant
     // left
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(cCenter.r, cCenter.g, cCenter.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH + THICKNESS*0.7f + THICKNESS, -THICKNESS*0.9, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS*0.7f, -THICKNESS*0.9, 0);
 
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH*0.09), - FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS*1.2, - FONT_HEIGHT + THICKNESS, 0);
     glEnd();
 
     // right
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(cCenter.r, cCenter.g, cCenter.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH - THICKNESS*0.7f - THICKNESS, -THICKNESS*0.9, 0);
         glVertex3f(FONT_WIDTH - THICKNESS*0.7f, -THICKNESS*0.9, 0);
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH*0.09), - FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(FONT_WIDTH - THICKNESS*1.2, - FONT_HEIGHT + THICKNESS, 0);
     glEnd();
 }
 
-void drawR(void)
+void drawR(BOOL change_color)
 {
+    color cUpper = cGray;
+    color cLower = cGray;
+    color cCenter = cGray;
+    if (change_color)
+    {
+        cUpper = cSaffron;
+        cLower = cGreen;
+        cCenter = cWhite;
+    }
 
     // middle line fix color
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(cCenter.r, cCenter.g, cCenter.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1), THICKNESS/2.0f, 0);
         glVertex3f(FONT_WIDTH - (1.2f * THICKNESS), THICKNESS/2.0f, 0);
@@ -938,16 +1019,17 @@ void drawR(void)
     glEnd();
 
     // upper part fix color
-    glColor3f(1.0f, 0.6f, 0.2f);
+    glColor3f(cUpper.r, cUpper.g, cUpper.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH, FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.3, FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.1, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(-FONT_WIDTH, FONT_HEIGHT - THICKNESS, 0);
     glEnd();
+
     //rpper right vertical line    
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.1, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1) - THICKNESS*1.2f, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1) - THICKNESS, FONT_HEIGHT*0.5f, 0);
@@ -957,20 +1039,20 @@ void drawR(void)
     // upper part color gradiant
     // left
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, FONT_HEIGHT - THICKNESS, 0);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, THICKNESS/2.0f, 0);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, THICKNESS/2.0f, 0);
     glEnd();
 
     // right
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(FONT_WIDTH - FONT_WIDTH * 0.1, FONT_HEIGHT*0.5f, 0);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH * 0.1) - THICKNESS, FONT_HEIGHT*0.5f, 0);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(FONT_WIDTH - THICKNESS*1.2f - THICKNESS, THICKNESS*0.5, 0);
         glVertex3f(FONT_WIDTH - THICKNESS*1.2f, 0, 0);
     glEnd();
@@ -978,50 +1060,59 @@ void drawR(void)
     // lower part color gradiant
     //left
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, -THICKNESS/2.0f, 0);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, -THICKNESS/2.0f, 0);
 
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(-FONT_WIDTH + (FONT_WIDTH * 0.1) + THICKNESS, -FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(-FONT_WIDTH + FONT_WIDTH * 0.1, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
+
     //right
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(cCenter.r, cCenter.g, cCenter.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH - THICKNESS*1.2f - THICKNESS, -THICKNESS*0.5, 0);
         glVertex3f(FONT_WIDTH - THICKNESS*1.2f, -THICKNESS*0.5, 0);
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(FONT_WIDTH - (FONT_WIDTH*0.09), - FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(FONT_WIDTH - THICKNESS*1.2, - FONT_HEIGHT + THICKNESS, 0);
     glEnd();
 
     //lower part fix colors
     //left
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
+    glColor3f(cLower.r, cLower.g, cLower.b);
     glBegin(GL_POLYGON);
         glVertex3f(-FONT_WIDTH, -FONT_HEIGHT, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS + (0.2 * FONT_WIDTH), -FONT_HEIGHT, 0);
         glVertex3f(-FONT_WIDTH + THICKNESS + (0.2 * FONT_WIDTH),-FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(-FONT_WIDTH, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
+
     // right
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
+    glColor3f(cLower.r, cLower.g, cLower.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH, -FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS - (0.2 * FONT_WIDTH), -FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS - (0.2 * FONT_WIDTH), -FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(FONT_WIDTH, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
-
-
 }
 
-void drawT(void)
+void drawT(BOOL change_color)
 {
+    color cUpper = cGray;
+    color cLower = cGray;
+    color cCenter = cGray;
+    if (change_color)
+    {
+        cUpper = cSaffron;
+        cLower = cGreen;
+        cCenter = cWhite;
+    }
     // upper part fix color
     //right
-    glColor3f(1.0f, 0.6f, 0.2f);
+    glColor3f(cUpper.r, cUpper.g, cUpper.b);
     glBegin(GL_POLYGON);
         glVertex3f(FONT_WIDTH, FONT_HEIGHT, 0);
         glVertex3f(FONT_WIDTH - THICKNESS, FONT_HEIGHT, 0);
@@ -1045,34 +1136,32 @@ void drawT(void)
 
     // upper part color gradiant
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 0.6f, 0.2f);
+        glColor3f(cUpper.r, cUpper.g, cUpper.b);
         glVertex3f(THICKNESS*0.5f, FONT_HEIGHT - THICKNESS, 0);
         glVertex3f(-THICKNESS*0.5f, FONT_HEIGHT - THICKNESS, 0);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-THICKNESS*0.5f, 0, 0);
         glVertex3f(THICKNESS*0.5f, 0, 0);
     glEnd();
 
     //lower part color gradiant
     glBegin(GL_POLYGON);
-        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(cCenter.r, cCenter.g, cCenter.b);
         glVertex3f(-THICKNESS*0.5f, 0, 0);
         glVertex3f(THICKNESS*0.5f, 0, 0);
-        glColor3f(0.0745f, 0.5333f, 0.0314f);
+        glColor3f(cLower.r, cLower.g, cLower.b);
         glVertex3f(THICKNESS*0.5f, -FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(-THICKNESS*0.5f, -FONT_HEIGHT + THICKNESS, 0);
     glEnd();
 
     //lower part fix color
-    glColor3f(0.0745f, 0.5333f, 0.0314f);
-    glBegin(GL_POLYGON);
+    glColor3f(cLower.r, cLower.g, cLower.b);
+    glBegin(GL_POLYGON);    
         glVertex3f(-THICKNESS*0.7f, -FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(THICKNESS*0.7f, -FONT_HEIGHT + THICKNESS, 0);
         glVertex3f(THICKNESS*0.7f, -FONT_HEIGHT, 0);
         glVertex3f(-THICKNESS*0.7f, -FONT_HEIGHT, 0);
     glEnd();
-
-
 }
 
 void drawBharat(void)
@@ -1086,7 +1175,7 @@ void drawBharat(void)
 
     glPushMatrix();
     glTranslatef( min(translateOriginal, gFontUpdateCnt), 0.0f, 0.0f);
-    drawB();
+    drawB((gCenterPlaneTranslationX*0.3 > translateOriginal));
     glPopMatrix();
     cnt++;
 
@@ -1094,10 +1183,9 @@ void drawBharat(void)
     {
         tempX = gFontUpdateCnt + translateOriginal;
         translateOriginal += FONT_WIDTH * 2.1f;
-        fprintf(gpFile, "tempX:%f, translateOriginal: %f\n", tempX, translateOriginal);
         glPushMatrix();
         glTranslatef(min(tempX, translateOriginal), max(0.0f,-tempX) , 0.0f);
-        drawH();
+        drawH((gCenterPlaneTranslationX*0.28 > translateOriginal));
         glPopMatrix();
         cnt++;
     }
@@ -1108,7 +1196,7 @@ void drawBharat(void)
         translateOriginal += FONT_WIDTH * 2.1f;
         glPushMatrix();
         glTranslatef(min(tempX, translateOriginal), min(0.0f,tempX) , 0.0f);
-        drawA();
+        drawA((gCenterPlaneTranslationX*0.26 > translateOriginal));
         glPopMatrix();
         cnt++;
     }
@@ -1119,7 +1207,7 @@ void drawBharat(void)
         translateOriginal += FONT_WIDTH * 2.1f;
         glPushMatrix();
         glTranslatef(translateOriginal, min(0.0f,tempX), 0.0f);
-        drawR();
+        drawR((gCenterPlaneTranslationX*0.23 > translateOriginal));
         glPopMatrix();
         cnt++;
     }
@@ -1130,7 +1218,7 @@ void drawBharat(void)
         translateOriginal += FONT_WIDTH * 2.1f;
         glPushMatrix();
         glTranslatef(max(translateOriginal, -tempX), max(0.0f, -tempX), 0.0f);
-        drawA();
+        drawA((gCenterPlaneTranslationX*0.20 > translateOriginal));
         glPopMatrix();
         cnt++;
     }
@@ -1141,7 +1229,7 @@ void drawBharat(void)
         translateOriginal += FONT_WIDTH * 2.1f;
         glPushMatrix();
         glTranslatef(max(translateOriginal, -2.0f*gFontUpdateCnt), 0.0f, 0.0f);
-        drawT();
+        drawT((gCenterPlaneTranslationX*0.28 > translateOriginal));
         glPopMatrix();
     }
 }
