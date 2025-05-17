@@ -1,4 +1,0 @@
-// this is resource file
-#include "Window.h"
-
-MYICON ICON VVA.ico

@@ -1,0 +1,7 @@
+#pragma once
+
+#define MYICON 101
+#define ID_BITMAP_BHAGATSING 102
+#define ID_BITMAP_RAJGURU 103
+#define ID_BITMAP_SUKHDEV 104
+#define ID_BITMAP_INDIA 105

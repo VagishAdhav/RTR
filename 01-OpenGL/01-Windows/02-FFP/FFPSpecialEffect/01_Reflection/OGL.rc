@@ -1,0 +1,6 @@
+// this is resource file
+#include "OGL.h"
+
+MYICON ICON VVA.ico
+ID_BITMAP_MARBLE BITMAP marble.bmp
+ID_BITMAP_WALL BITMAP wall.bmp
