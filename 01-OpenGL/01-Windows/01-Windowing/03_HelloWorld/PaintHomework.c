@@ -1,0 +1,173 @@
+// win32 headers
+#include <Windows.h>
+#include "Window.h"
+
+// global function declarations
+LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+
+// entry point function
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
+{
+    // variable declaration
+    WNDCLASSEX wndclass;
+    HWND hwnd;
+    MSG msg;
+    TCHAR szAppName[] = TEXT("RTR6");
+
+    //code
+    
+    // window class initialisation
+    wndclass.cbSize = sizeof(WNDCLASSEX);
+    wndclass.style = CS_HREDRAW | CS_VREDRAW;
+    wndclass.cbClsExtra = 0;
+    wndclass.cbWndExtra = 0;
+    wndclass.lpfnWndProc = WndProc;
+    wndclass.hInstance = hInstance;
+    wndclass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    wndclass.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
+    wndclass.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wndclass.lpszClassName = szAppName;
+    wndclass.lpszMenuName = NULL;
+    wndclass.hIconSm = LoadIcon(hInstance, MAKEINTRESOURCE(MYICON));
+
+    // registration of window class
+    RegisterClassEx(&wndclass);
+
+    // create window
+    hwnd = CreateWindow(szAppName, TEXT("Vagish Vishvanath Adhav"), 
+                        WS_OVERLAPPEDWINDOW, 
+                        CW_USEDEFAULT, 
+                        CW_USEDEFAULT, 
+                        CW_USEDEFAULT, 
+                        CW_USEDEFAULT, 
+                        NULL, 
+                        NULL, 
+                        hInstance, 
+                        NULL);
+
+    // show window
+    ShowWindow(hwnd, iCmdShow);
+
+    // paint background
+    UpdateWindow(hwnd);
+
+    // message loop
+    /// generally for HW message
+    //GetMessage return false for WM_QUIT
+    while (GetMessage(&msg, NULL, 0, 0))
+    {
+        TranslateMessage(&msg);
+        // dispatch message never returned till processed by WndProc
+        DispatchMessage(&msg);
+    }
+
+    return (int)msg.wParam;
+}
+
+// callback function
+LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+    // variable declaration
+    HDC hdc;
+    PAINTSTRUCT ps;
+    RECT rc;
+    TCHAR str[] = TEXT("Hello world Homework!!");
+    static int iPaintFlag = 0;
+    COLORREF arrColor[8] = {RGB(0, 0, 0), RGB(255, 0, 0), RGB(0, 255, 0), RGB(0, 0, 255), RGB(255, 255, 0), RGB(0, 255, 255), RGB(255, 0, 255), RGB(255, 255, 255) };
+    //code 
+    switch (iMsg)
+    {
+
+    /*case WM_LBUTTONDOWN:
+        GetClientRect(hwnd, &rc);
+        hdc = GetDC(hwnd);
+        SetBkColor(hdc, RGB(0, 0, 0));
+        SetTextColor(hdc, RGB(0, 255, 0));
+        DrawText(hdc, str, -1, &rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+        ReleaseDC(hwnd, hdc);
+        break;*/
+
+    case WM_PAINT:
+        // WM_PAINT is posted messsage
+        /* this message is recieved in 8 situations
+            1. When window is displayed first time
+            2. Window dragged (Windows moved)
+            3. Cursor moved over window
+            4. Any icon moved over window
+            5. Menu clicked, and pulled back
+            6. Resize
+            7. Scrollig
+            8. Partialy covered window is uncovered
+        */ 
+        // InvalidateRect(hwnd, NULL, TRUE) // third arguments here speifies repaint which results in WMPAINT message
+        GetClientRect(hwnd, &rc);
+        hdc = BeginPaint(hwnd, &ps);
+        SetBkColor(hdc, RGB(0, 0, 0));
+        SetTextColor(hdc, arrColor[iPaintFlag]);
+        DrawText(hdc, str, -1, &rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+        EndPaint(hwnd, &ps);
+        break;
+
+    case WM_CHAR:
+        switch(wParam)
+        {
+            case 'R':
+            case 'r':
+                iPaintFlag = 1;
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+
+            case 'G':
+            case 'g':
+                iPaintFlag = 2;
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+
+            case 'B':
+            case 'b':
+                iPaintFlag = 3;
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+
+            
+            case 'Y':
+            case 'y':
+                iPaintFlag = 4;
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+
+            
+            case 'C':
+            case 'c':
+                iPaintFlag = 5;
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+
+                        
+            case 'M':
+            case 'm':
+                iPaintFlag = 6;
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+
+
+            case 'W':
+            case 'w':
+                iPaintFlag = 7;
+                InvalidateRect(hwnd, NULL, TRUE);
+                break;
+
+            default:
+                break;
+        }
+        break;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+
+    default:
+        break;
+    }
+
+    return (DefWindowProc(hwnd, iMsg, wParam, lParam));
+}

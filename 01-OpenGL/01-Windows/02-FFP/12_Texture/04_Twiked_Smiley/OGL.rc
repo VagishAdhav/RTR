@@ -1,0 +1,5 @@
+// this is resource file
+#include "OGL.h"
+
+MYICON ICON OGL.ico
+ID_BITMAP_SMILEY BITMAP Smiley.bmp
