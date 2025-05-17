@@ -1,6 +1,13 @@
 
 #pragma once
 
+#define SCOPE_ORIGIN_X (0.0f)
+#define SCOPE_ORIGIN_Y (0.0f)
+#define SCOPE_WIDTH    (40.0f)
+#define SCOPE_HEIGHT   (25.0f)
+
+
+extern void drawOscilloScope(float fCenterX, float fCenterY, float fWidth, float fHeight);
 
 extern void drawCPU(void);
 
@@ -84,3 +91,5 @@ void drawW(GLfloat Xbox, GLfloat Ybox, GLfloat xL);
 void drawX(GLfloat Xbox, GLfloat Ybox, GLfloat xL);
 void drawY(GLfloat Xbox, GLfloat Ybox, GLfloat xL);
 void drawZ(GLfloat Xbox, GLfloat Ybox, GLfloat xL);
+extern void drawChairWithPerson(void);
+void drawBallon(void);
