@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES 1
 #include <math.h>
 // custome header files
 #include "OGL.h"
@@ -527,10 +528,42 @@ void drawEquilateralTriangleAroundUnitCircle(my_color_t color)
 {
     glColor3f(color.r, color.g, color.b);
 
+    // consider a equilateral triangle
+/*
+          C 
+         /|\ 
+        / | \  
+       /  |O \
+     A/___|___\B
+          P
+
+    Here Assuming incircle is unit circle around origin
+    OP = 1, angle A,B and C are 60 degrees each
+*/
+    float op = 0.7f;
+    float ao, ap, ac, pc, oc, Ax, Ay, Bx, By, Cx, Cy;
+
+    ao = op/sin(M_PI/6.0f);
+    ap = ao * cos(M_PI/6.0f);
+    Ax = -ap;
+    Ay = -op;
+
+    Bx = -Ax;
+    By = Ay;
+
+    // Cos A = ap/ac
+    ac = ap /cos(M_PI/3.0f);
+    // Sin A = pc/ac
+    pc = ac * sin(M_PI/3.0f);
+
+    Cy = pc - op;
+    Cx = 0.0f;
+
+
     glBegin(GL_LINE_LOOP);
         // apex 
-        glVertex3f(0.0f, 1.0f, 0.0f);
-        glVertex3f(-0.865f, -0.5f, 0.0f);
-        glVertex3f(0.865f, -0.5f, 0.0f);
+        glVertex3f(Cx, Cy, 0.0f);
+        glVertex3f(Ax, Ay, 0.0f);
+        glVertex3f(Bx, By, 0.0f);
     glEnd();
 }

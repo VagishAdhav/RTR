@@ -562,12 +562,43 @@ void drawEquilateralTriangleAroundUnitCircle(void)
     glRotatef(gAngleRotation, 0.0f, 1.0f, 0.0f);
     glScalef(0.3f, 0.3f, 1.0f);
 
-    /// calculations attached in the same directory
+    // consider a equilateral triangle
+/*
+          C 
+         /|\ 
+        / | \  
+       /  |O \
+     A/___|___\B
+          P
+
+    Here Assuming incircle is unit circle around origin
+    OP = 1, angle A,B and C are 60 degrees each
+*/
+    float op = 1.0f;
+    float ao, ap, ac, pc, oc, Ax, Ay, Bx, By, Cx, Cy;
+
+    ao = op/sin(M_PI/6.0f);
+    ap = ao * cos(M_PI/6.0f);
+    Ax = -ap;
+    Ay = -op;
+
+    Bx = -Ax;
+    By = Ay;
+
+    // Cos A = ap/ac
+    ac = ap /cos(M_PI/3.0f);
+    // Sin A = pc/ac
+    pc = ac * sin(M_PI/3.0f);
+
+    Cy = pc - op;
+    Cx = 0.0f;
+
+
     glBegin(GL_LINE_LOOP);
         // apex 
-        glVertex3f(0.0f, 2.0f, 0.0f);
-        glVertex3f(-1.73152f, -1.0f, 0.0f);
-        glVertex3f(1.73152f,  -1.0f, 0.0f);
+        glVertex3f(Cx, Cy, 0.0f);
+        glVertex3f(Ax, Ay, 0.0f);
+        glVertex3f(Bx, By, 0.0f);
     glEnd();
 }
 

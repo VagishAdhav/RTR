@@ -811,13 +811,13 @@ void uninitialise(void)
 
     if (textureKundali)
     {
-        glDeleteTextures(1, textureKundali);
+        glDeleteTextures(1, &textureKundali);
         textureKundali = 0;
     }
 
     if (textureStone)
     {
-        glDeleteTextures(1, textureStone);
+        glDeleteTextures(1, &textureStone);
         textureStone = 0;
     }
 

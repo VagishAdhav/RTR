@@ -81,7 +81,7 @@ BOOL gbActiveWindow = TRUE;
 BOOL gbEscKeyIsPressed = FALSE;
 
 // transformation related variables
-GLfloat gFontUpdateCnt = -5.0f;
+GLfloat gFontUpdateCnt = 0.0f;
 GLfloat gPlaneRotationLeft = 0.0f;
 GLfloat gPlaneRotationRight = -90.0f;
 GLfloat gPlaneTranslationX = -PLANE_PIVOT_X;
@@ -92,6 +92,54 @@ color cSaffron = {1.0f, 0.6f, 0.2f};
 color cGreen = {0.0745f, 0.5333f, 0.0314f};
 color cWhite = {1.0f, 1.0f, 1.0f};
 color cGray= {0.5f, 0.5f, 0.5f};
+
+//// texture related global variables
+GLuint textureBhagasing;
+GLuint textureRajguru;
+GLuint textureSukhdev;
+GLuint textureIndia;
+GLdouble gldAngleCube = 0.0f;
+
+GLfloat cubeTexcoords[] =
+{
+	// front
+	1.0f, 1.0f, // top-right of front
+	0.0f, 1.0f, // top-left of front
+	0.0f, 0.0f, // bottom-left of front
+	1.0f, 0.0f, // bottom-right of front
+
+	// right
+	1.0f, 1.0f, // top-right of right
+	0.0f, 1.0f, // top-left of right
+	0.0f, 0.0f, // bottom-left of right
+	1.0f, 0.0f, // bottom-right of right
+
+	// back
+	1.0f, 1.0f, // top-right of back
+	0.0f, 1.0f, // top-left of back
+	0.0f, 0.0f, // bottom-left of back
+	1.0f, 0.0f, // bottom-right of back
+
+	// left
+	1.0f, 1.0f, // top-right of left
+	0.0f, 1.0f, // top-left of left
+	0.0f, 0.0f, // bottom-left of left
+	1.0f, 0.0f, // bottom-right of left
+
+	// top
+	1.0f, 1.0f, // top-right of top
+	0.0f, 1.0f, // top-left of top
+	0.0f, 0.0f, // bottom-left of top
+	1.0f, 0.0f, // bottom-right of top
+
+	// bottom
+	1.0f, 1.0f, // top-right of bottom
+	0.0f, 1.0f, // top-left of bottom
+	0.0f, 0.0f, // bottom-left of bottom
+	1.0f, 0.0f, // bottom-right of bottom
+};
+
+
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -336,6 +384,7 @@ int initialise(void)
     // function declarations
     void printGLInfo(void);
     void resize(int width, int height);
+    BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[]);
 
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
@@ -409,10 +458,39 @@ int initialise(void)
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // tell openGl to choose the color to clear the screen
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-    	PlaySound(TEXT("MeraRangDe.wav"), NULL, SND_ASYNC);
+        // load textures
+    if (loadGLTexture(&textureBhagasing, MAKEINTRESOURCE(ID_BITMAP_BHAGATSING)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_BHAGATSING\n");
+        return -6;
+    }
+
+    if (loadGLTexture(&textureRajguru, MAKEINTRESOURCE(ID_BITMAP_RAJGURU)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_RAJGURU\n");
+        return -7;
+    }
+
+    if (loadGLTexture(&textureSukhdev, MAKEINTRESOURCE(ID_BITMAP_SUKHDEV)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_SUKHDEV\n");
+        return -8;
+    }
+
+    if (loadGLTexture(&textureIndia, MAKEINTRESOURCE(ID_BITMAP_INDIA)) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_INDIA\n");
+        return -9;
+    }
+
+    // enable texturing
+    glEnable(GL_TEXTURE_2D);
+
+    PlaySound(TEXT("MeraRangDe.wav"), NULL, SND_ASYNC);
 
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
@@ -432,6 +510,52 @@ void printGLInfo(void)
     fprintf(gpFile, "********************\n");
 }
 
+
+BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[])
+{
+    //variable declarations
+    HBITMAP hBitmap = NULL;
+    BITMAP bmp;
+    BOOL bResult = FALSE;
+
+    //code
+    //load the bitmap as image
+    hBitmap = LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+    if (hBitmap)
+    {
+        bResult = TRUE;
+        // get bitmap structure for the loaded bitmap image
+        GetObject(hBitmap, sizeof(BITMAP), &bmp);
+        // generate OpenGL texture object
+        glGenTextures(1, texture);
+        // bind to newly created texture object
+        glBindTexture(GL_TEXTURE_2D, *texture);
+        // unpack the image in memory for faster loading
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        // set texture parameter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+        // 1, binding point
+        // 2, no of components (3 colors)
+        // 3. width
+        // 4. height
+        // 5. format of image bata
+        // 6. type of bitmap data
+        //(glTexImage2D + glGeneratemimap)
+        gluBuild2DMipmaps(GL_TEXTURE_2D, 3, bmp.bmWidth, bmp.bmHeight, GL_BGR_EXT, GL_UNSIGNED_BYTE, (void *)bmp.bmBits);
+
+        // unbind
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // delete object
+        DeleteObject(hBitmap);
+
+        hBitmap = NULL;
+    }
+
+    return bResult;
+}
 
 void resize(int width, int height)
 {
@@ -470,7 +594,9 @@ void display(void)
 {
     // function declaratiion
     void drawBharat(void);
-    void drawPlane(color cSmoke);
+    void drawPlane(color);
+    void drawFacesOnCube(void);
+    void drawIndia(float);
 
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -487,8 +613,19 @@ void display(void)
     // draw the Bharat
     drawBharat();
 
+    // draw India map
+    if (gCenterPlaneTranslationX >= 13.0f)
+    {
+        glPushMatrix();
+        glTranslatef(0.3f, 0.0f, -8.5f);
+        glScalef(30.0f, 22.0f, 20.0f);
+        glColor3f(cWhite.r, cWhite.g, cWhite.b);
+        drawIndia((gCenterPlaneTranslationX - 18.0f)*0.05f);
+        glPopMatrix();
+    }
+
     // draw planes
-    if (gFontUpdateCnt >= 4.0f)
+    if (gFontUpdateCnt >= 16.0f)
     {
         glPushMatrix();
         glScalef(0.25f, 0.25f, 1.0f);
@@ -549,37 +686,52 @@ void display(void)
         drawPlane(cWhite);
         glPopMatrix();
     }
+    // draw faces
+    if (gCenterPlaneTranslationX >= 16.0f)
+    {
+        glPushMatrix();    
+        glTranslatef(-2.5f, 4.0f, -7.0f);
+        glRotatef(gldAngleCube, 0.0f, 1.0f, 0.0f);
+        drawFacesOnCube();
+        glPopMatrix();
+    }
     SwapBuffers(ghdc);
 }
 
 void update(void)
 {
     //code
-    if (gFontUpdateCnt < 4.0f)
+    if (gFontUpdateCnt < 16.0f)
     {
-        gFontUpdateCnt = gFontUpdateCnt + 0.01f;
+        //gFontUpdateCnt = gFontUpdateCnt + 0.012f;
+        gFontUpdateCnt = gFontUpdateCnt + 0.02f;
     }
     else if (gPlaneRotationLeft >= -90.0f)
     {
-        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.01f;
-        gPlaneRotationLeft = gPlaneRotationLeft - 0.2f;
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.02f;
+        gPlaneRotationLeft = gPlaneRotationLeft - 0.3f;
     }
     else if (gPlaneTranslationX < PLANE_PIVOT_X)
     {
-        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.02f;
-        gPlaneTranslationX = gPlaneTranslationX + 0.02f;
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.03f;
+        gPlaneTranslationX = gPlaneTranslationX + 0.03f;
     }
     else if (gPlaneRotationRight >= -220.0f)
     {
-        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.01f;
-        gPlaneRotationRight = gPlaneRotationRight - 0.2f;
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.02f;
+        gPlaneRotationRight = gPlaneRotationRight - 0.3f;
     }
     else
     {
-        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.01f;
+        gCenterPlaneTranslationX = gCenterPlaneTranslationX + 0.02f;
     }
 
-
+        
+    gldAngleCube = gldAngleCube + 1.0f;
+    if (gldAngleCube >= 360.0f)
+    {
+        gldAngleCube = 0.0f;
+    }
 }
 
 void uninitialise(void)
@@ -1168,70 +1320,65 @@ void drawBharat(void)
 {
     // variable declaration
     float translateOriginal = -2.0f;
-    float tempX;
+    float tempX, tempY;
     static int cnt = 0;
 
     glScalef(0.5f, 0.5f, 1.0f);
 
     glPushMatrix();
-    glTranslatef( min(translateOriginal, gFontUpdateCnt), 0.0f, 0.0f);
+    tempX = -5.0f + gFontUpdateCnt;
+    glTranslatef( min(translateOriginal, tempX), 0.0f, 0.0f);
     drawB((gCenterPlaneTranslationX*0.3 > translateOriginal));
+    glPopMatrix();
+
+  
+    translateOriginal += FONT_WIDTH * 2.1f;
+    tempX = -5.0f + gFontUpdateCnt;
+    tempY = 5.0f - gFontUpdateCnt;
+    glPushMatrix();
+    glTranslatef(min(tempX, translateOriginal), max(0.0f,tempY) , 0.0f);
+    drawH((gCenterPlaneTranslationX*0.28 > translateOriginal));
     glPopMatrix();
     cnt++;
 
-    if (cnt >= 10)
-    {
-        tempX = gFontUpdateCnt + translateOriginal;
-        translateOriginal += FONT_WIDTH * 2.1f;
-        glPushMatrix();
-        glTranslatef(min(tempX, translateOriginal), max(0.0f,-tempX) , 0.0f);
-        drawH((gCenterPlaneTranslationX*0.28 > translateOriginal));
-        glPopMatrix();
-        cnt++;
-    }
+    translateOriginal += FONT_WIDTH * 2.1f;
+    tempX = -8.0f + gFontUpdateCnt;
+    tempY = -8.0f + gFontUpdateCnt;
+    glPushMatrix();
+    glTranslatef(min(tempX, translateOriginal), min(0.0f,tempY) , 0.0f);
+    drawA((gCenterPlaneTranslationX*0.26 > translateOriginal));
+    glPopMatrix();
+    cnt++;
 
-    if (cnt >= 20)
-    {
-        tempX = gFontUpdateCnt + translateOriginal;
-        translateOriginal += FONT_WIDTH * 2.1f;
-        glPushMatrix();
-        glTranslatef(min(tempX, translateOriginal), min(0.0f,tempX) , 0.0f);
-        drawA((gCenterPlaneTranslationX*0.26 > translateOriginal));
-        glPopMatrix();
-        cnt++;
-    }
 
-    if (cnt >= 30)
-    {
-        tempX = gFontUpdateCnt + translateOriginal;
-        translateOriginal += FONT_WIDTH * 2.1f;
-        glPushMatrix();
-        glTranslatef(translateOriginal, min(0.0f,tempX), 0.0f);
-        drawR((gCenterPlaneTranslationX*0.23 > translateOriginal));
-        glPopMatrix();
-        cnt++;
-    }
+    tempX = 11.0f - gFontUpdateCnt;
+    tempY = 11.0f - gFontUpdateCnt;
+    translateOriginal += FONT_WIDTH * 2.1f;
+    glPushMatrix();
+    glTranslatef(max(tempX, translateOriginal), max(0.0f,tempY), 0.0f);
+    drawR((gCenterPlaneTranslationX*0.23 > translateOriginal));
+    glPopMatrix();
+    cnt++;
 
-    if (cnt >= 40)
-    {
-        tempX = gFontUpdateCnt + translateOriginal;
-        translateOriginal += FONT_WIDTH * 2.1f;
-        glPushMatrix();
-        glTranslatef(max(translateOriginal, -tempX), max(0.0f, -tempX), 0.0f);
-        drawA((gCenterPlaneTranslationX*0.20 > translateOriginal));
-        glPopMatrix();
-        cnt++;
-    }
 
-    if (cnt >= 500)
-    {
-        tempX = gFontUpdateCnt + translateOriginal;
-        translateOriginal += FONT_WIDTH * 2.1f;
-        glPushMatrix();
-        glTranslatef(max(translateOriginal, -2.0f*gFontUpdateCnt), 0.0f, 0.0f);
-        drawT((gCenterPlaneTranslationX*0.28 > translateOriginal));
-        glPopMatrix();
-    }
+
+    tempX = 14.0f - gFontUpdateCnt;
+    tempY = -14.0f + gFontUpdateCnt;
+    translateOriginal += FONT_WIDTH * 2.1f;
+    glPushMatrix();
+    glTranslatef(max(translateOriginal, tempX), min(0.0f, tempY), 0.0f);
+    drawA((gCenterPlaneTranslationX*0.20 > translateOriginal));
+    glPopMatrix();
+    cnt++;
+
+
+    tempX = 18.0f - gFontUpdateCnt;
+    translateOriginal += FONT_WIDTH * 2.1f;
+    glPushMatrix();
+    glTranslatef(max(translateOriginal, tempX), 0.0f, 0.0f);
+    drawT((gCenterPlaneTranslationX*0.28 > translateOriginal));
+    glPopMatrix();
+
 }
 
 #define PLANE_BODY_WIDTH (0.25f)
@@ -1244,7 +1391,7 @@ void drawPlane(color cSmoke)
     // variable declaration
     point pStart, pEnd, pControl, pTemp;
     color cNoseColor = {0.275f, 0.510f, 0.706f};
-    color cBodyColorBase = {0.000f, 0.545f, 0.545f};
+    color cBodyColorBase = {0.118f, 0.565f, 1.000f};
     color cTailColor = {0.561, 0.737, 0.561};
     color cShadowColor = {0.000, 0.502, 0.502};
     color cOrange = {1.0f, 0.6f, 0.2f};
@@ -1598,11 +1745,181 @@ void drawPlane(color cSmoke)
     glEnd();
 
     glBegin(GL_POLYGON);
-        glColor4f(cSmoke.r, cSmoke.g, cSmoke.b, 0.9f);
+        glColor4f(cSmoke.r, cSmoke.g, cSmoke.b, 0.8f);
         glVertex3f(PLANE_BODY_WIDTH - (PLANE_BODY_WIDTH * 0.2) , -PLANE_BODY_HEGHT - (PLANE_BODY_HEGHT * 0.2), 0.0f);
         glVertex3f(-PLANE_BODY_WIDTH + (PLANE_BODY_WIDTH * 0.2) , -PLANE_BODY_HEGHT - (PLANE_BODY_HEGHT * 0.2), 0.0f);
         glVertex3f(-PLANE_BODY_WIDTH*1.5f, -PLANE_BODY_HEGHT - (PLANE_BODY_HEGHT * 0.8), 0.0f);
         glVertex3f(PLANE_BODY_WIDTH*1.5f, -PLANE_BODY_HEGHT - (PLANE_BODY_HEGHT * 0.8), 0.0f);
     glEnd();
 
+}
+
+void drawFacesOnCube(void)
+{
+    glBindTexture(GL_TEXTURE_2D, textureBhagasing);
+
+    // draw the front face
+    glBegin(GL_QUADS);
+       
+        // top right
+        // top right
+        glTexCoord2f(cubeTexcoords[0], cubeTexcoords[1]);
+        glVertex3f(1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[2], cubeTexcoords[3]);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[4], cubeTexcoords[5]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[6], cubeTexcoords[7]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+    // draw the back face
+    glBegin(GL_QUADS);
+
+        // top right
+        glTexCoord2f(cubeTexcoords[8], cubeTexcoords[9]);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[10], cubeTexcoords[11]);
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // bottom left
+        glTexCoord2f(cubeTexcoords[12], cubeTexcoords[13]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[14], cubeTexcoords[15]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glBindTexture(GL_TEXTURE_2D, textureRajguru);
+    // draw the right face
+    glBegin(GL_QUADS);
+
+       
+        // top right
+        glTexCoord2f(cubeTexcoords[16], cubeTexcoords[17]);
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[18], cubeTexcoords[19]);
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[20], cubeTexcoords[21]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[22], cubeTexcoords[23]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+    glEnd();
+    glBindTexture(GL_TEXTURE_2D, 0);
+    // draw the left face
+    glBindTexture(GL_TEXTURE_2D, textureSukhdev);
+    glBegin(GL_QUADS);
+
+        // top right
+        glTexCoord2f(cubeTexcoords[24], cubeTexcoords[25]);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[26], cubeTexcoords[27]);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[28], cubeTexcoords[29]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[30], cubeTexcoords[31]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+
+    // draw Top face
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, textureRajguru);
+    glBegin(GL_QUADS);
+
+        // top right
+        glTexCoord2f(cubeTexcoords[32], cubeTexcoords[33]);
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[34], cubeTexcoords[35]);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[36], cubeTexcoords[37]);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[38], cubeTexcoords[39]);
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+    glEnd();
+
+  
+    // draw Bottom face
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBegin(GL_QUADS);
+
+        // top right
+        glTexCoord2f(cubeTexcoords[40], cubeTexcoords[41]);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[42], cubeTexcoords[43]);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[44], cubeTexcoords[45]);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[46], cubeTexcoords[47]);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void drawIndia(float height)
+{
+    float maxHeight = 1.0f;
+    float currentHeight = min(height, maxHeight);
+
+    glBindTexture(GL_TEXTURE_2D, textureIndia);
+    glBegin(GL_QUADS);
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex3f( 0.5f, 0.5f, 0.0f);     // Top Right
+
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex3f(-0.5f, 0.5f, 0.0f);     // Top Left 
+                
+        glTexCoord2f(0.0f, 1.0f - currentHeight);
+        glVertex3f(-0.5f, 0.5f - currentHeight, 0.0f);     // Bottom Left
+
+        glTexCoord2f(1.0f, 1.0f - currentHeight);
+        glVertex3f( 0.5f, 0.5f - currentHeight, 0.0f);     // Bottom Right
+    glEnd();
+    glBindTexture(GL_TEXTURE_2D, 0);
 }

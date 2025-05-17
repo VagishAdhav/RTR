@@ -87,6 +87,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     else
     {
         fprintf(gpFile, "Program Started Successfully\n");
+        fflush(gpFile);
     }
 
     // window class initialisation
@@ -137,7 +138,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     }
     else
     {
-        fprintf(gpFile, "Initialise function completed successfully");
+        fprintf(gpFile, "Initialise function completed successfully\n");
     }
 
     
@@ -151,6 +152,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     {
         if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
         {
+            fprintf(gpFile, "PeekMessage : %d\n", msg.message);
             if (msg.message == WM_QUIT)
             {
                 bDone = TRUE;
@@ -202,6 +204,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_CHAR:
+        fprintf(gpFile, "WM_CHAR : %d\n", wParam);
         switch(wParam)
         {
             case 'F':
@@ -272,6 +275,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                 break;
 
             default:
+                fprintf(gpFile, "WM_KEYDOWN : %d\n", wParam);
+                fflush(gpFile);
+                //return 0;
                 break;   
         }
         break;

@@ -1,6 +1,0 @@
-// this is resource file
-#include "OGL.h"
-
-MYICON ICON VVA.ico
-ID_BITMAP_EARTH BITMAP earth.bmp
-ID_BITMAP_MOON BITMAP moon.bmp

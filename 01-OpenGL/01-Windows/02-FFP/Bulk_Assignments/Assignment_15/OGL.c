@@ -102,7 +102,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
     RegisterClassEx(&wndclass);
 
     // create window
-    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Adhav. Assignment-10"), 
+    hwnd = CreateWindowEx(WS_EX_APPWINDOW, szAppName, TEXT("Vagish Adhav. Assignment-15"), 
                         WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE,
                         GetSystemMetrics(SM_CXSCREEN)/2 - WIN_WIDTH/2,
                         GetSystemMetrics(SM_CYSCREEN)/2 - WIN_HEIGHT/2, 
@@ -521,12 +521,43 @@ void drawUnitCircleAroundOrigin(void)
 void drawEquilateralTriangleAroundUnitCircle(void)
 {
 
-    /// calculations attached in the same directory
+    // consider a equilateral triangle
+/*
+          C 
+         /|\ 
+        / | \  
+       /  |O \
+     A/___|___\B
+          P
+
+    Here Assuming incircle is unit circle around origin
+    OP = 1, angle A,B and C are 60 degrees each
+*/
+    float op = 1.0f;
+    float ao, ap, ac, pc, oc, Ax, Ay, Bx, By, Cx, Cy;
+
+    ao = op/sin(M_PI/6.0f);
+    ap = ao * cos(M_PI/6.0f);
+    Ax = -ap;
+    Ay = -op;
+
+    Bx = -Ax;
+    By = Ay;
+
+    // Cos A = ap/ac
+    ac = ap /cos(M_PI/3.0f);
+    // Sin A = pc/ac
+    pc = ac * sin(M_PI/3.0f);
+
+    Cy = pc - op;
+    Cx = 0.0f;
+
+
     glBegin(GL_LINE_LOOP);
         // apex 
-        glVertex3f(0.0f, 2.0f, 0.0f);
-        glVertex3f(-1.73f, -1.0f, 0.0f);
-        glVertex3f(1.73f,  -1.0f, 0.0f);
+        glVertex3f(Cx, Cy, 0.0f);
+        glVertex3f(Ax, Ay, 0.0f);
+        glVertex3f(Bx, By, 0.0f);
     glEnd();
 }
 

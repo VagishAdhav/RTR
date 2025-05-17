@@ -439,10 +439,9 @@ void display(void)
 
     glLoadIdentity();
     angle = (gldAnglePyramid) * (M_PI / 180.0f);  // convert degree to radians
-    gluLookAt(6.0f * sin(angle), 0.0f, 6.0f * cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    gluLookAt(9.0f * sin(angle), 0.0f, 9.0f * cos(angle), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     glTranslatef(0.0f, 0.0f, -4.0f);
     glScalef(0.5f, 0.5f, 0.5f);
-    //glRotatef(gldAnglePyramid, 0.0f, 1.0f, 0.0f);
     drawCube();
 
 
