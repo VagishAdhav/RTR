@@ -1,0 +1,70 @@
+#include <stdio.h>
+
+int main(void)
+{
+    //variable declaration
+    int num_month_vva;
+
+    //code 
+    printf("Enter number of month (1 of 12) : ");
+    scanf("%d", &num_month_vva);
+    printf("\n\n");
+
+    switch (num_month_vva)
+    {
+    case 1: // like 'if'
+        printf("Month number %d is JANUARY !!!\n\n", num_month_vva);
+        break;
+
+    case 2: // like 'else if'
+        printf("Month number %d is FEBRUARY !!!\n\n", num_month_vva);
+        break;
+    
+    case 3: // like 'else if'
+        printf("Month number %d is MARCH !!!\n\n", num_month_vva);
+        break;
+    
+    case 4: // like 'else if'
+        printf("Month number %d is APRIL !!!\n\n", num_month_vva);
+        break;
+    
+    case 5: // like 'else if'
+        printf("Month number %d is MAY !!!\n\n", num_month_vva);
+        break;
+    
+    case 6: // like 'else if'
+        printf("Month number %d is JUNE !!!\n\n", num_month_vva);
+        break;
+    
+    case 7: // like 'else if'
+        printf("Month number %d is JULY !!!\n\n", num_month_vva);
+        break;
+    
+    case 8: // like 'else if'
+        printf("Month number %d is AUGUST !!!\n\n", num_month_vva);
+        break;
+    
+    case 9: // like 'else if'
+        printf("Month number %d is SEPTEMBER !!!\n\n", num_month_vva);
+        break;
+    
+    case 10: // like 'else if'
+        printf("Month number %d is OCTOBER !!!\n\n", num_month_vva);
+        break;
+    
+    case 11: // like 'else if'
+        printf("Month number %d is NOVEMBER !!!\n\n", num_month_vva);
+        break;
+    
+    case 12: // like 'else if'
+        printf("Month number %d is DECEMBER !!!\n\n", num_month_vva);
+        break;
+
+    default: // like ending optional 'else'
+        printf("Invalid month number %d is entered, please try again !!!\n\n", num_month_vva);
+    }
+
+    printf("Switch case block complete !!! \n");
+
+    return (0);
+}
