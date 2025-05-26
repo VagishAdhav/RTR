@@ -71,7 +71,6 @@ GLfloat materialShininess = 128.0f;
 
 // special effect related global variables
 GLuint textureMarble;
-GLuint textureWall;
 GLfloat translateCubeX = 0.0f;
 GLfloat translateCubeY = 1.7f;
 GLfloat translateCubeZ = 0.0f;
@@ -574,7 +573,6 @@ void display(void)
     // function declaration
     void drawLitCube(void);
     void drawFloor(void);
-    void drawWall(void);
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -803,30 +801,6 @@ void drawFloor(void)
     glEnd();
     glBindTexture(GL_TEXTURE_2D, 0);
     glPopMatrix();
-}
-
-void drawWall(void)
-{
-    //code
-    glBindTexture(GL_TEXTURE_2D, textureWall);
-    glBegin(GL_QUADS);
-        // right top
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex3f(1.0f, 1.0f, 0.0f);
-        
-        // left top
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex3f(-1.0f, 1.0f, 0.0f);
-        
-        // left bottom
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex3f(-1.0f, -1.0f, 0.0f);
-
-        // right bottom
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex3f(1.0f, -1.0f, 0.0f);
-    glEnd();
-    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void update(void)
