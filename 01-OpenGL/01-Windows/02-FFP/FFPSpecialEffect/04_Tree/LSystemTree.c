@@ -17,18 +17,9 @@
 GLUquadric *trunk;
 
 
-int expandTree(LSystemTree **obj, float length, float width,  float angleZ, float angleY, BOOL straight)
-{    
-
-    int random = 0;
-    int chance = 90;
-    char *newBranch[2][2] = {{"[llTL][rTL]", "[llTL]T[rTL]"},
-                             {"[lTL][rrTL]", "[lTL]T[rrTL]"}};
-    
-
-    srand(time(NULL));
-
-    if (*obj == NULL)
+int createTree(LSystemTree **obj, float length, float width,  float angleZ, float angleY, BOOL straight, drawTree drawTrunk, drawTree drawLeaf)
+{
+      if (*obj == NULL)
     {
         *obj = (LSystemTree *)malloc(sizeof(LSystemTree));
         (*obj)->trunk_length  = length;
@@ -38,13 +29,30 @@ int expandTree(LSystemTree **obj, float length, float width,  float angleZ, floa
         (*obj)->depth = 1;
         (*obj)->pattern = (char *)malloc(20480);
         strcpy((*obj)->pattern, "TL");
+        return 0;
     }
-    else
-    {
+
+    return -1;
+}
+
+int expandTree(LSystemTree *obj)
+{    
+
+    int random = 0;
+    int chance = 90;
+    char *newBranch[2][2] = {{"[llTL][rTL]", "[llTL]T[rTL]"},
+                             {"[lTL][rrTL]", "[lTL]T[rrTL]"}};
+
+    char *pattern = (*obj)->pattern;
+    char * temp_pattern = (char *)calloc(20480, sizeof(char));
+    (*obj)->depth++;
+    
+
+    srand(time(NULL));
+
+
         int index = 0;
-        char *pattern = (*obj)->pattern;
-        char * temp_pattern = (char *)calloc(20480, sizeof(char));
-        (*obj)->depth++;
+
         while (*pattern)
         {
             switch(*pattern)
@@ -82,7 +90,7 @@ int expandTree(LSystemTree **obj, float length, float width,  float angleZ, floa
         strcpy((*obj)->pattern, temp_pattern);
         free(temp_pattern);
         temp_pattern = NULL;
-    }
+
     return 0;
 }
 

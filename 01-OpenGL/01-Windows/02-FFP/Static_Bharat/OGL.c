@@ -271,7 +271,7 @@ void ToggleFullScreen(void)
            }
         }
         //optional, hide cursor
-        ShowCursor(FALSE);
+        //ShowCursor(FALSE);
     }
     else
     {

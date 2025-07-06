@@ -406,7 +406,6 @@ void resize(int width, int height)
         -100.0f,   // near
         100.0f);   // far
     }
-    
 
 }
 

@@ -747,6 +747,31 @@ void uninitialise(void)
         gbFullScreen = FALSE;
     }
 
+    if (textureIndia)
+    {
+        glDeleteTextures(1, &textureIndia);
+        textureIndia = 0;
+    }
+
+    if (textureSukhdev)
+    {
+        glDeleteTextures(1, &textureSukhdev);
+        textureSukhdev = 0;
+    }
+
+    if (textureRajguru)
+    {
+        glDeleteTextures(1, &textureRajguru);
+        textureRajguru = 0;
+    }
+
+    if (textureBhagasing)
+    {
+        glDeleteTextures(1, &textureBhagasing);
+        textureBhagasing = 0;
+    }
+
+
     //make hdc as current conext by releasing releasing renderring context as current context
     if (wglGetCurrentContext() == ghrc)
     {

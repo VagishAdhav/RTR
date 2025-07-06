@@ -1,0 +1,10 @@
+// this is resource file
+#include "OGL.h"
+
+MYICON ICON VVA.ico
+ID_BITMAP_BOY BITMAP .\Textures\BoyTexture2.bmp
+ID_BITMAP_PLATFORM BITMAP .\Textures\WoodPlatform.bmp
+ID_BITMAP_DRY_GRASS BITMAP .\Textures\DryGrass.bmp
+ID_BITMAP_SIDE_SKY BITMAP .\Textures\SideSky.bmp
+ID_BITMAP_DRY_LAKE BITMAP .\Textures\DryLake.bmp
+ID_BITMAP_TERRAIN BITMAP .\Textures\Terrain.bmp
