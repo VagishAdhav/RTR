@@ -27,7 +27,6 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define WIN_WIDTH  (800)
 #define WIN_HEIGHT (600)
 
-
 // global variable declarations
 // variables related to fullscreen
 BOOL gbFullScreen = FALSE;
@@ -49,6 +48,49 @@ BOOL gbEscKeyIsPressed = FALSE;
 LSystemTree *tree1 = NULL;
 LSystemTree *tree2 = NULL;
 GLfloat treeRotationY = 0.0f;
+GLUquadric *trunkQuadric = NULL;
+GLuint textureTrunk, textureLeafs;
+
+
+GLfloat cubeTexcoords[] =
+{
+	// front
+	1.0f, 1.0f, // top-right of front
+	0.0f, 1.0f, // top-left of front
+	0.0f, 0.0f, // bottom-left of front
+	1.0f, 0.0f, // bottom-right of front
+
+	// right
+	1.0f, 1.0f, // top-right of right
+	0.0f, 1.0f, // top-left of right
+	0.0f, 0.0f, // bottom-left of right
+	1.0f, 0.0f, // bottom-right of right
+
+	// back
+	1.0f, 1.0f, // top-right of back
+	0.0f, 1.0f, // top-left of back
+	0.0f, 0.0f, // bottom-left of back
+	1.0f, 0.0f, // bottom-right of back
+
+	// left
+	1.0f, 1.0f, // top-right of left
+	0.0f, 1.0f, // top-left of left
+	0.0f, 0.0f, // bottom-left of left
+	1.0f, 0.0f, // bottom-right of left
+
+	// top
+	1.0f, 1.0f, // top-right of top
+	0.0f, 1.0f, // top-left of top
+	0.0f, 0.0f, // bottom-left of top
+	1.0f, 0.0f, // bottom-right of top
+
+	// bottom
+	1.0f, 1.0f, // top-right of bottom
+	0.0f, 1.0f, // top-left of bottom
+	0.0f, 0.0f, // bottom-left of bottom
+	1.0f, 0.0f, // bottom-right of bottom
+};
+
 
 
 // entry point function
@@ -294,6 +336,9 @@ int initialise(void)
     // function declarations
     void printGLInfo(void);
     void resize(int width, int height);
+    void drawTrunk(float width, float length);
+    void drawLeaf(float width, float length);
+    BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int channels);
 
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
@@ -355,8 +400,33 @@ int initialise(void)
     // printf GL info
     printGLInfo();
 
+    // load textures
+    if (loadGLTexture(&textureTrunk, MAKEINTRESOURCE(ID_BITMAP_TRUNK), 3) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_TRUNK\n");
+        return -6;
+    }
+
+    if (loadGLTexture(&textureLeafs, MAKEINTRESOURCE(ID_BITMAP_LEAFS), 4) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_LEAFS\n");
+        return -6;
+    }
+    
+    
+
+    // create tree object
+    createTree(&tree1, 0.4f, 0.2f, 20.0f, 40.0f, FALSE, drawTrunk, drawLeaf);
+    expandTree(&tree1, 7);
+
 
     //from here onwards opengl code starts
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  
+    glEnable(GL_TEXTURE_2D);
+    trunkQuadric = gluNewQuadric();
+    gluQuadricTexture(trunkQuadric, GL_TRUE); // Enable texture capability
+    gluQuadricNormals(trunkQuadric, GLU_SMOOTH);  // Smooth shading
+    gluQuadricDrawStyle(trunkQuadric, GLU_FILL);  // Solid cylinder
 
 
     // depth related code
@@ -366,8 +436,11 @@ int initialise(void)
     glDepthFunc(GL_LEQUAL); // pass the fragments whose values are less than are equal to glClear depth
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // whenever some shapes are deterioted due to prespective projection and depth, give them nicest appearance
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
     // tell openGl to choose the color to clear the screen
-    glClearColor(0.000f, 0.000f, 0.545f, 0.0f);
+    glClearColor(0.000f, 0.000f, 0.0, 0.0f);
 
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
@@ -387,6 +460,54 @@ void printGLInfo(void)
     fprintf(gpFile, "********************\n");
 }
 
+BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int no_channels)
+{
+    //variable declarations
+    HBITMAP hBitmap = NULL;
+    BITMAP bmp;
+    BOOL bResult = FALSE;
+
+    //code
+    //load the bitmap as image
+    hBitmap = LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+    if (hBitmap)
+    {
+        bResult = TRUE;
+        GLenum format = (no_channels == 3) ? GL_BGR_EXT : GL_BGRA_EXT;
+
+        // get bitmap structure for the loaded bitmap image
+        GetObject(hBitmap, sizeof(BITMAP), &bmp);
+        // generate OpenGL texture object
+        glGenTextures(1, texture);
+        // bind to newly created texture object
+        glBindTexture(GL_TEXTURE_2D, *texture);
+        // unpack the image in memory for faster loading
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        // set texture parameter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+        // 1, binding point
+        // 2, no of components (3 colors)
+        // 3. width
+        // 4. height
+        // 5. format of image bata
+        // 6. type of bitmap data
+        //(glTexImage2D + glGeneratemimap)
+ 
+        gluBuild2DMipmaps(GL_TEXTURE_2D, no_channels, bmp.bmWidth, bmp.bmHeight, format, GL_UNSIGNED_BYTE, (void *)bmp.bmBits);
+
+        // unbind
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // delete object
+        DeleteObject(hBitmap);
+
+        hBitmap = NULL;
+    }
+
+    return bResult;
+}
 
 void resize(int width, int height)
 {
@@ -423,6 +544,9 @@ void resize(int width, int height)
 
 void display(void)
 {
+    void drawQuadWithTexture(GLuint *texture , unsigned int repeat);
+
+    GLfloat length = 1.0f;
     //code
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -432,80 +556,147 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    if (tree1)
-    {
-        glPushMatrix();
-            glTranslatef(0.0f, -1.0f, -4.0f);
-            glRotatef(treeRotationY, 0.0f, 1.0f, 0.0f);
-            glScalef(1.0f, 0.15f, 1.0f); 
-            displayTree(tree1);
-        glPopMatrix();
-    }
+    //gluLookAt(0.0f, 0.0f, 10.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    gluLookAt(0.0f, 0.0f, 20.0f, 0.0f, 5.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    // gluLookAt(0, 0, 0,  0, 2, 0,  0, 1, 0); // Eye, center, up
 
-    if (tree2)
-    {
-        glPushMatrix();
-            glTranslatef(0.0f, -1.0f, -4.0f);
-            glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-            glRotatef(treeRotationY, 0.0f, 1.0f, 0.0f);
-            glScalef(1.0f, 0.15f, 1.0f); 
-            displayTree(tree2);
-        glPopMatrix();
-    }
+   
+    // glRotatef(treeRotationY, 0.0f, 1.0f, 0.0f);
+    // glDepthMask(GL_FALSE);
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // drawQuadWithTexture(&textureLeafs, 1);
+    // glDisable(GL_BLEND);
 
-    if (tree2)
-    {
-        glPushMatrix();
-            glTranslatef(0.0f, -1.0f, -4.0f);
-            glRotatef(270.0f, 0.0f, 1.0f, 0.0f);
-            glRotatef(treeRotationY, 0.0f, 1.0f, 0.0f);
-            glScalef(1.0f, 0.15f, 1.0f); 
-            displayTree(tree2);
-        glPopMatrix();
-    }
+    // glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    // drawQuadWithTexture(&textureLeafs, 1);
+    // glDisable(GL_BLEND);
+    // glDepthMask(GL_TRUE);
+
+
+
 
     if (tree1)
     {
         glPushMatrix();
-            glTranslatef(0.0f, -1.0f, -4.0f);
-            glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+            glTranslatef(0.0f, -1.0f, 0.0f);
+            //glScalef(0.3f, 0.3f, 0.3f);
             glRotatef(treeRotationY, 0.0f, 1.0f, 0.0f);
-            glScalef(1.0f, 0.15f, 1.0f); 
             displayTree(tree1);
         glPopMatrix();
     }
-//
-    //glPushMatrix();
-    //    glTranslatef(-5.0f, -2.0f, -3.0f);
-    //    glScalef(1.0f, 0.3f, 1.0f); 
-    //    displayTree(tree1);
-    //glPopMatrix();
+
+    if (tree1)
+    {
+        glPushMatrix();
+            glTranslatef(0.0f, -1.0f, 0.0f);
+            //glScalef(0.3f, 0.3f, 0.3f);
+            glRotatef(treeRotationY + 90.0f, 0.0f, 1.0f, 0.0f);
+            displayTree(tree1);
+        glPopMatrix();
+    }
+
+    if (tree1)
+    {
+        glPushMatrix();
+            glTranslatef(0.0f, -1.0f, 0.0f);
+            //glScalef(0.3f, 0.3f, 0.3f);
+            glRotatef(treeRotationY - 90.0f, 0.0f, 1.0f, 0.0f);
+            displayTree(tree1);
+        glPopMatrix();
+    }
 
     SwapBuffers(ghdc);
 }
 
+void drawTrunk(float length, float width)
+{
+    static unsigned int red = 1;
+    glMatrixMode(GL_TEXTURE);
+    glPushMatrix();
+        glLoadIdentity();
+        //glRotatef(-90, 0, 0, 1);  // Rotate 90° counter-clockwise
+        glScalef(length / width,1.0f, 1.0f);  // Repeat vertically
+    glPopMatrix();
+
+    glMatrixMode(GL_MODELVIEW);
+    glBindTexture(GL_TEXTURE_2D, textureTrunk);
+    glPushMatrix();
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+        gluCylinder(trunkQuadric, width, width, length, 32, 32);
+    glPopMatrix();
+    glTranslatef(0.0f,length, 0.0f);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void drawQuadWithTexture(GLuint *texture , unsigned int repeat)
+{
+    glBindTexture(GL_TEXTURE_2D, *texture);
+
+    // draw the front face
+    glBegin(GL_QUADS);
+
+        // top right
+        glTexCoord2f(cubeTexcoords[0] * repeat, cubeTexcoords[1] * repeat);
+        glVertex3f(1.0f, 1.0f, 0.0f);
+        
+        // top left
+        glTexCoord2f(cubeTexcoords[2] * repeat, cubeTexcoords[3] * repeat);
+        glVertex3f(-1.0f, 1.0f, 0.0f);
+
+        // bottom left
+        glTexCoord2f(cubeTexcoords[4] * repeat, cubeTexcoords[5] * repeat);
+        glVertex3f(-1.0f, -1.0f, 0.0f);
+
+        // bottom right
+        glTexCoord2f(cubeTexcoords[6] * repeat, cubeTexcoords[7] * repeat);
+        glVertex3f(1.0f, -1.0f, 0.0f);
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void drawLeaf(float length, float width)
+{
+    glDepthMask(GL_FALSE);      
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //sglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+    glPushMatrix();
+        glRotatef(90.0f, 1.0f, 1.0f, 0.0f);
+        drawQuadWithTexture(&textureLeafs, 1);
+    glPopMatrix();
+    glDisable(GL_BLEND);
+    glDepthMask(GL_TRUE);  
+}
+ 
 void update(void)
 {
     // variable declaration
-    static int treeDepth = 10;
+    static int treeDepth = 1;
     static int treeIncrement = 1;
 
-    //code
-    if (treeIncrement % 50 == 0)
-    {
-        if (treeDepth)
-        {
-            fprintf(gpFile, "%d :\n", treeDepth);
-            fflush(gpFile);
-            expandTree(&tree1, 0.05f, 10.0f, 5.0f, 20.0f, TRUE);
-            expandTree(&tree2, 0.04f, 10.0f, 6.0f, 40.0f, FALSE);
-            treeDepth--;
-            fprintf(gpFile, "%s\n", tree1->pattern);
-            fflush(gpFile);
-        }
-    }
 
-    if (treeDepth == 0)
+    //code
+    // if (treeIncrement % 50 == 0)
+    // {
+    //     if (treeDepth < 4)
+    //     {
+    //         fprintf(gpFile, "%d :\n", treeDepth);
+    //         fflush(gpFile);
+    //         expandTree(&tree1, treeDepth);
+    //         // expandTree(&tree2, treeDepth);
+    //         treeDepth++;
+    //         fprintf(gpFile, "%s\n", tree1->pattern);
+    //         fflush(gpFile);
+    //     }
+    // }
+
+    //if (treeDepth == 10)
     {
         treeRotationY += 1.0f;
     }
@@ -513,6 +704,7 @@ void update(void)
     //if (gbFullScreen)
     {
         treeIncrement++;
+        //treeRotationY = 45.0f;
     }
 }
 
