@@ -8,3 +8,5 @@ ID_BITMAP_DRY_GRASS BITMAP .\Textures\DryGrass.bmp
 ID_BITMAP_SIDE_SKY BITMAP .\Textures\SideSky.bmp
 ID_BITMAP_DRY_LAKE BITMAP .\Textures\DryLake.bmp
 ID_BITMAP_TERRAIN BITMAP .\Textures\Terrain.bmp
+ID_BITMAP_TRUNK BITMAP .\Textures\trunk.bmp
+ID_BITMAP_LEAFS BITMAP .\Textures\leafs.bmp

@@ -1,6 +1,8 @@
 
 // custome header files
 #include "OGL.h"
+#include "LSystemTree.h"
+#include "Camera.h"
 
 // OpenGL related libraries
 #pragma comment(lib, "opengl32.lib") // Import library
@@ -18,7 +20,9 @@ LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 #define WIN_WIDTH  (800)
 #define WIN_HEIGHT (600)
 
-#define DEG_TO_RAD(deg) ((deg) * M_PI / 180.0)
+#define BOY_POS_X (1.0f)
+#define BOY_POS_Y (0.0f)
+#define BOY_POS_Z (-1.0f)
 
 // moldel related structures
 #pragma pack(1)
@@ -56,7 +60,7 @@ typedef struct
     Faces *VectFaces;
     unsigned int faceCount;
     GLuint texture;
-}DecodedObjModel;
+} DecodedObjModel;
 
 GLuint textureBoy;
 
@@ -87,15 +91,9 @@ GLfloat lightPosition[] = {0.0f, 0.0f, 2.0f};
 BOOL bLight = FALSE;
 
 // model related variables
-DecodedObjModel Boy = {.VectFaces = NULL, .faceCount = 0,
-                          .VectNormal = NULL, .normalCount = 0,
-                          .VectVertex = NULL, .vertexCount = 0, 
-                          .VectTexCords = NULL, .texCordsCount = 0};
+DecodedObjModel Boy = {0};
 
-DecodedObjModel Terrain = { .VectFaces = NULL, .faceCount = 0,
-                        .VectNormal = NULL, .normalCount = 0,
-                        .VectVertex = NULL, .vertexCount = 0, 
-                        .VectTexCords = NULL, .texCordsCount = 0};
+DecodedObjModel Terrain = {0};
 
 // wood platform related variables
 GLuint texturePlatform;
@@ -112,9 +110,27 @@ GLuint textureDryLake;
 //  texture terrain
 GLuint textureTerrain;
 
-// camera angle 
-GLfloat cameraAngle = 0.0f;
+// Tree related variables
+LSystemTree *tree1 = NULL;
+LSystemTree *tree2 = NULL;
+GLfloat treeRotationY = 0.0f;
+GLUquadric *trunkQuadric = NULL;
+GLuint textureTrunk, textureLeafs;
+
+// camera angle and scenes
+BOOL scene1 = FALSE;
+BOOL scene2 = FALSE;
+
+float controlPoints[4][3] = {
+        {0.0f, 1.0f, 30.0f},
+        {25.0f, 1.0f, 20.0f},
+        {-25.0f, 1.0f, 10.0f},
+        {0.0f, 1.0f, 0.0f},
+        };
+
 GLfloat zOffset = -0.0f;
+
+std::vector<CameraPos> scene1Camera;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -373,6 +389,8 @@ int initialise(void)
     void resize(int width, int height);
     int loadObj(char *fileName, DecodedObjModel* decodedObj);
     void debugObj(DecodedObjModel* decodedObj);
+    void drawTrunk(float width, float length);
+    void drawLeaf(float width, float length);
     BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int channels);
 
     // variable declaration
@@ -486,11 +504,41 @@ int initialise(void)
         fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_TERRAIN\n");
         return -12;
     }
+        // load textures
+    if (loadGLTexture(&textureTrunk, MAKEINTRESOURCE(ID_BITMAP_TRUNK), 3) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_TRUNK\n");
+        return -13;
+    }
+
+    if (loadGLTexture(&textureLeafs, MAKEINTRESOURCE(ID_BITMAP_LEAFS), 4) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_LEAFS\n");
+        return -14;
+    }
+    
+    
+
+    // create tree object
+    createTree(&tree1, 0.4f, 0.2f, 40.0f, 40.0f, FALSE, drawTrunk, drawLeaf);
 
     Terrain.texture = textureTerrain;
 
-    //from here onwards opengl code starts
 
+    // setup camera for scene 1
+    scene1 = TRUE;
+    // create camera object
+    cameraSet(&scene1Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    //cameraSet(&scene1Camera, 0.0f, 10.0f, 30.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    // move forward and down
+    //cameraMove(&scene1Camera, (MOVE_DOWN | MOVE_FORWARD), 10.0f, 0.09f, TRUE);
+    //cameraMove(&scene1Camera, (MOVE_FORWARD), 3.0f, 0.09f, TRUE);
+    // now revolve around Y
+    //cameraRevolvAroundY(&scene1Camera, 180.0f, 0.1f);
+    //cameraRotateX(&scene1Camera, 180.0f, 0.1f);
+    cameraCurve(&scene1Camera, controlPoints, 0.001f, FALSE);
+
+    //from here onwards opengl code starts
 
     // depth related code
     glShadeModel(GL_SMOOTH); // tell opengl to use smoothness whilde shading
@@ -507,6 +555,12 @@ int initialise(void)
 
     // enable texturing
     glEnable(GL_TEXTURE_2D);
+
+    // Preparation for Tree drawing
+    trunkQuadric = gluNewQuadric();
+    gluQuadricTexture(trunkQuadric, GL_TRUE); // Enable texture capability
+    gluQuadricNormals(trunkQuadric, GLU_SMOOTH);  // Smooth shading
+    gluQuadricDrawStyle(trunkQuadric, GLU_FILL);  // Solid cylinder
 
 
     // tell openGl to choose the color to clear the screen
@@ -539,11 +593,11 @@ BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int no_cha
 
     //code
     //load the bitmap as image
-    hBitmap = LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+    hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
     if (hBitmap)
     {
         bResult = TRUE;
-        GLenum format = (no_channels == 3) ? GL_BGR_EXT : GL_BGRA_EXT;
+        GLenum format = (no_channels == 4) ? GL_BGRA_EXT : GL_BGR_EXT;
 
         // get bitmap structure for the loaded bitmap image
         GetObject(hBitmap, sizeof(BITMAP), &bmp);
@@ -614,12 +668,7 @@ void resize(int width, int height)
 void display(void)
 {
     // function declaration
-    void drawBoy(void);
-    void drawRamp(void);
-    void drawGrass(GLuint *texture);
-    void drawSideSky(void);
-    void drawDryLake(void);
-    void drawTerrain(void);
+    void drawScene1(void);
 
 
     //code
@@ -631,9 +680,45 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
+    if (scene1)
+    {
+        drawScene1();
+    }
+
     //gluLookAt(0.0f, 0.0f, 9.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    gluLookAt(9.0f * sin(DEG_TO_RAD(cameraAngle)), 0.0f, (9.0f * cos(DEG_TO_RAD(cameraAngle))) + zOffset*1.1f , 0.0f, zOffset*0.22f + (zOffset > 0.0f), 0.0f, 0.0f, 1.0f, 0.0f);
     //gluLookAt(19.0f * sin(DEG_TO_RAD(cameraAngle)), 0.0f, 19.0f * cos(DEG_TO_RAD(cameraAngle)), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+
+
+
+    SwapBuffers(ghdc);
+}
+
+void drawScene1(void)
+{
+    // function declaration
+    void drawBoy(void);
+    void drawRamp(void);
+    void drawGrass(GLuint *texture);
+    void drawSideSky(void);
+    void drawDryLake(void);
+    void drawTerrain(void);
+    void drawTree(GLfloat x, GLfloat y, GLfloat z);
+
+    // code 
+    static int cameraPos = 0;
+
+
+    gluLookAt(scene1Camera[cameraPos].eyeX, scene1Camera[cameraPos].eyeY, scene1Camera[cameraPos].eyeZ,
+              scene1Camera[cameraPos].centerX, scene1Camera[cameraPos].centerY, scene1Camera[cameraPos].centerZ,
+              scene1Camera[cameraPos].upX, scene1Camera[cameraPos].upY, scene1Camera[cameraPos].upZ);
+    if (cameraPos < scene1Camera.size() - 1)
+    {
+        cameraPos++;
+    }
+    else
+    {
+        cameraPos = 0;
+    }
 
     drawBoy();
     drawRamp();
@@ -641,8 +726,17 @@ void display(void)
     drawSideSky();
     drawDryLake();
     drawTerrain();
+    drawTree(BOY_POS_X+1.0f, BOY_POS_Y, BOY_POS_Z+1.0f);
+    drawTree(BOY_POS_X+1.0f, BOY_POS_Y - 1.0f, BOY_POS_Z+1.0f);
 
-    SwapBuffers(ghdc);
+
+}
+void drawTree(GLfloat x, GLfloat y, GLfloat z)
+{
+    glPushMatrix();
+        glTranslatef(x, y, z);
+        displayTree(tree1);
+    glPopMatrix();
 }
 
 void drawBoy(void)
@@ -650,7 +744,8 @@ void drawBoy(void)
     void drawObj(DecodedObjModel* decodedObj);
     glPushMatrix();
 
-    glTranslatef(0.0f, 0.0f, -1.0f);
+    // glTranslatef(BOY_POS_X, 0.0f, -1.0f);
+    glTranslatef(BOY_POS_X, BOY_POS_Y, BOY_POS_Z);
     glScalef(1.0f, 1.0f, 1.0f); 
     glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
 
@@ -690,7 +785,7 @@ void drawGrass(GLuint *texture)
     glPushMatrix();
     glTranslatef(0.0f, -1.2f, 22.0f);
     glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-    glScalef(15.0f, 20.0f, 1.0f);
+    glScalef(48.0f, 20.0f, 1.0f);
     drawQuadWithTexture(texture, 8);
     glPopMatrix();
 }
@@ -701,7 +796,7 @@ void drawSideSky(void)
 
     glPushMatrix();
 
-    glScalef(20.0f, 20.0f, 20.0f);
+    glScalef(49.0f, 49.0f, 49.0f);
     drawCubeWithTexture(&textureSideSky, 2);
     glPopMatrix();
 }
@@ -713,7 +808,7 @@ void drawDryLake(void)
     glPushMatrix();
     glTranslatef(0.0f, -1.5f, 11.0f);
     glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-    glScalef(20.0f, 22.0f, 1.0f);
+    glScalef(48.0f, 25.0f, 1.0f);
     drawQuadWithTexture(&textureDryLake, 16);
     glPopMatrix();
 }
@@ -787,21 +882,45 @@ void drawRamp(void)
 
 }
 
+void drawLeaf(float length, float width)
+{
+    void drawQuadWithTexture(GLuint *texture , unsigned int repeat);
+    glDepthMask(GL_FALSE);      
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //sglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_DST_ALPHA);
+    glPushMatrix();
+        glRotatef(90.0f, 1.0f, 1.0f, 0.0f);
+        drawQuadWithTexture(&textureLeafs, 1);
+    glPopMatrix();
+    glDisable(GL_BLEND);
+    glDepthMask(GL_TRUE);  
+}
+ 
+void drawTrunk(float length, float width)
+{
+    static unsigned int red = 1;
+    glMatrixMode(GL_TEXTURE);
+    glPushMatrix();
+        glLoadIdentity();
+        //glRotatef(-90, 0, 0, 1);  // Rotate 90° counter-clockwise
+        glScalef(length / width,1.0f, 1.0f);  // Repeat vertically
+    glPopMatrix();
+
+    glMatrixMode(GL_MODELVIEW);
+    glBindTexture(GL_TEXTURE_2D, textureTrunk);
+    glPushMatrix();
+        glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+        gluCylinder(trunkQuadric, width, width, length, 32, 32);
+    glPopMatrix();
+    glTranslatef(0.0f,length, 0.0f);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void update(void)
 {
     //code
-    
-    if (cameraAngle > -180.0f)
-    {
-        cameraAngle -= 0.1f;
-    }
-    else if (zOffset < 6.0f)
-    {
-        zOffset += 0.04f; 
-    }
-
 }
-
 
 int loadObj(char *fileName, DecodedObjModel* decodedObj)
 {
