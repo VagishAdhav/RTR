@@ -39,7 +39,120 @@ GLfloat cubeTexcoords[] =
 	1.0f, 0.0f, // bottom-right of bottom
 };
 
+void drawCube(void)
+{
+     // draw the front face
+    glBegin(GL_QUADS);
 
+        //glColor3f(1.0f, 1.0f, 1.0f);
+        
+        // top right
+        glVertex3f(1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+    // draw the back face
+    glBegin(GL_QUADS);
+
+        // top right
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // bottom left
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+        // bottom right
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+        // draw the right face
+    glBegin(GL_QUADS);
+
+       
+        // top right
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+        // bottom left
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+    glEnd();
+
+    // draw the left face
+    glBegin(GL_QUADS);
+
+        // top right
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+
+        // bottom right
+;
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+    glEnd();
+
+
+    // draw Top face
+
+    glBegin(GL_QUADS);
+
+        // top right
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+    glEnd();
+
+  
+    // draw Bottom face
+    glBegin(GL_QUADS);
+
+        // top right
+        glVertex3f(1.0f, -1.0f, -1.0f);
+        
+        // top left
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        
+
+        // bottom left
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+        // bottom right
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+    glEnd();
+}
 
 void drawCubeWithTexture(GLuint *texture, unsigned int repeat)
 {

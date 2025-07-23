@@ -31,8 +31,6 @@ void cameraSet(std::vector<CameraPos> *pos,
     pos->push_back(tempPos);
 }
 
-
-
 void cameraRevolvAroundX(std::vector<CameraPos> *CamPos, float angle, float speed)
 {
     float dir = (angle > 0.0f) ? 1.0f : -1.0f;
@@ -176,29 +174,29 @@ void cameraMove(std::vector<CameraPos> *CamPos, unsigned int direction, float di
         {
             if (direction & (MOVE_FORWARD))
             {
-                current.centerZ =  current.eyeZ - speed;
+                current.centerZ =  current.eyeZ;
             }
             else if (direction & (MOVE_BACKWARD))
             {
-                current.centerZ = current.eyeZ + speed;
+                current.centerZ = current.eyeZ;
             }
 
             if (direction & (MOVE_LEFT))
             {
-                current.centerX = current.eyeX - speed;
+                current.centerX = current.eyeX;
             }
             else if (direction & (MOVE_RIGHT))
             {
-                current.centerX = current.eyeX + speed;
+                current.centerX = current.eyeX;
             }
 
             if (direction & (MOVE_DOWN))
             {
-                current.centerY = current.eyeY - speed;
+                current.centerY = current.eyeY;
             }
             else if (direction & (MOVE_UP))
             {
-                current.centerY =  current.eyeY + speed;
+                current.centerY =  current.eyeY;
             }
         }
         CamPos->push_back(current);

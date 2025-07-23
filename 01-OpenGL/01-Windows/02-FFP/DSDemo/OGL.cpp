@@ -63,6 +63,9 @@ typedef struct
 } DecodedObjModel;
 
 GLuint textureBoy;
+GLuint textureBridge;
+GLuint textureFantasy;
+GLuint textureOffice;
 
 // global variable declarations
 // variables related to fullscreen
@@ -92,8 +95,10 @@ BOOL bLight = FALSE;
 
 // model related variables
 DecodedObjModel Boy = {0};
-
+DecodedObjModel Bridge = {0};
 DecodedObjModel Terrain = {0};
+DecodedObjModel Fantasy = {0};
+DecodedObjModel Office = {0};
 
 // wood platform related variables
 GLuint texturePlatform;
@@ -117,20 +122,33 @@ GLfloat treeRotationY = 0.0f;
 GLUquadric *trunkQuadric = NULL;
 GLuint textureTrunk, textureLeafs;
 
-// camera angle and scenes
-BOOL scene1 = FALSE;
-BOOL scene2 = FALSE;
 
-float controlPoints[4][3] = {
+// camera angle and scenes
+
+BOOL Scene1 = FALSE;
+
+float controlPointsScene1[4][3] = {
         {0.0f, 1.0f, 30.0f},
         {25.0f, 1.0f, 20.0f},
         {-25.0f, 1.0f, 10.0f},
         {0.0f, 1.0f, 0.0f},
         };
 
-GLfloat zOffset = -0.0f;
+Vertex scene1RoomPos = {1.0f, 0.0f, -25.0f};
+Vertex scene1BookPos = {-18.0f, 25.3f, -68.0f};
 
 std::vector<CameraPos> scene1Camera;
+
+BOOL Scene2 = FALSE;
+
+float controlPointsScene2[4][3] = {
+        {0.0f, 1.0f, 30.0f},
+        {25.0f, 1.0f, 20.0f},
+        {-25.0f, 1.0f, 10.0f},
+        {0.0f, 1.0f, 0.0f},
+        };
+
+std::vector<CameraPos> scene2Camera;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -304,6 +322,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
                     glDisable(GL_LIGHTING);
                 }
                 break;
+
+            case 'D':
+            case 'd':
+                fprintf(gpFile, "x: %f, y: %f, z: %f\n", scene1Camera.back().eyeX, scene1Camera.back().eyeY, scene1Camera.back().eyeZ);
+                fflush(gpFile);
+                break;
             default:
                 break;
         }
@@ -333,6 +357,33 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
         {
             case VK_ESCAPE:
                 gbEscKeyIsPressed = TRUE;
+                break;
+
+            case VK_RIGHT:
+                cameraMove(&scene1Camera, MOVE_RIGHT, 0.2f, 0.1f, TRUE);
+                break;
+
+            case VK_LEFT:
+                cameraMove(&scene1Camera, MOVE_LEFT, 0.2f, 0.1f, TRUE);
+                break;
+
+            case VK_UP:
+                // translate cube up
+                cameraMove(&scene1Camera, MOVE_UP, 0.2f, 0.1f, TRUE);
+                break;
+            
+            case VK_DOWN:
+                // translate cube down
+                cameraMove(&scene1Camera, MOVE_DOWN, 0.2f, 0.1f, TRUE);
+                break;
+
+            case VK_ADD:
+                cameraMove(&scene1Camera, MOVE_FORWARD, 0.2f, 0.1f, TRUE);
+                break;
+
+            case VK_SUBTRACT:
+                //zoom out
+                cameraMove(&scene1Camera, MOVE_BACKWARD, 0.2f, 0.1f, TRUE);
                 break;
 
             default:
@@ -456,8 +507,11 @@ int initialise(void)
     // load obj file
     loadObj("./Models/Child.obj", &Boy);
     loadObj("./Models/Terrain.obj", &Terrain);
+    loadObj("./Models/WoodenBridge.obj", &Bridge);
+    loadObj("./Models/FantasyBook.obj", &Fantasy);
+    loadObj("./Models/Office.obj", &Office);
 
-    //debugObj(&Boy);
+    //debugObj(&Fantasy);
 
     // load textures
     if (loadGLTexture(&textureBoy, MAKEINTRESOURCE(ID_BITMAP_BOY), 4) == FALSE)
@@ -516,8 +570,30 @@ int initialise(void)
         fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_LEAFS\n");
         return -14;
     }
-    
-    
+
+    if (loadGLTexture(&textureBridge, MAKEINTRESOURCE(ID_BITMAP_BRIDGE), 4) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_BRIDGE\n");
+        return -15;
+    }
+
+    Bridge.texture = textureBridge;
+
+    if (loadGLTexture(&textureFantasy, MAKEINTRESOURCE(ID_BITMAP_FANTASY_BOOK), 3) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_FANTASY_BOOK\n");
+        return -16;
+    }
+
+    Fantasy.texture = textureFantasy;    
+
+    if (loadGLTexture(&textureOffice, MAKEINTRESOURCE(ID_BITMAP_OFFICE), 4) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_OFFICE\n");
+        return -17;
+    }
+
+    Office.texture = textureOffice; 
 
     // create tree object
     createTree(&tree1, 0.4f, 0.2f, 40.0f, 40.0f, FALSE, drawTrunk, drawLeaf);
@@ -526,17 +602,31 @@ int initialise(void)
 
 
     // setup camera for scene 1
-    scene1 = TRUE;
+    Scene1 = TRUE;
     // create camera object
-    cameraSet(&scene1Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
-    //cameraSet(&scene1Camera, 0.0f, 10.0f, 30.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    //cameraSet(&scene2Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    cameraSet(&scene1Camera, 0.0f, 35.0f, 50.0f, 0.0f, 35.0f, -100.0f, UP_Y);
+    cameraMove(&scene1Camera, (MOVE_FORWARD), 30.0f, 0.09f, TRUE);
+    cameraRotateY(&scene1Camera, 50.0f, 0.1f);
+    cameraRotateY(&scene1Camera, -50.0f, 0.1f);
+    cameraMove(&scene1Camera, (MOVE_FORWARD), 60.0f, 0.09f, TRUE);
+    cameraRotateY(&scene1Camera, 10.0f, 0.09f);
+    cameraRotateY(&scene1Camera, -10.0f, 0.09f);
+    cameraRotateY(&scene1Camera, -15.0f, 0.09f);
+    cameraMove(&scene1Camera, (MOVE_FORWARD | MOVE_LEFT), 2.0f, 0.09f, TRUE);
+
+    // setup camera for scene 2
+    Scene2 = FALSE;
+    // create camera object
+    //cameraSet(&scene2Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    cameraSet(&scene2Camera, 0.0f, 10.0f, 30.0f, 0.0f, 0.0f, 0.0f, UP_Y);
     // move forward and down
-    //cameraMove(&scene1Camera, (MOVE_DOWN | MOVE_FORWARD), 10.0f, 0.09f, TRUE);
-    //cameraMove(&scene1Camera, (MOVE_FORWARD), 3.0f, 0.09f, TRUE);
+    cameraMove(&scene2Camera, (MOVE_DOWN | MOVE_FORWARD), 10.0f, 0.09f, TRUE);
+    cameraMove(&scene2Camera, (MOVE_FORWARD), 3.0f, 0.09f, TRUE);
     // now revolve around Y
-    //cameraRevolvAroundY(&scene1Camera, 180.0f, 0.1f);
-    //cameraRotateX(&scene1Camera, 180.0f, 0.1f);
-    cameraCurve(&scene1Camera, controlPoints, 0.001f, FALSE);
+    cameraRevolvAroundY(&scene2Camera, 180.0f, 0.1f);
+    //cameraRotateX(&scene2Camera, 180.0f, 0.1f);
+    //cameraCurve(&scene2Camera, controlPointsScene2, 0.001f, FALSE);
 
     //from here onwards opengl code starts
 
@@ -563,8 +653,9 @@ int initialise(void)
     gluQuadricDrawStyle(trunkQuadric, GLU_FILL);  // Solid cylinder
 
 
-    // tell openGl to choose the color to clear the screen
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    // GLfloat fogColor[4] = {0.6f, 0.7f, 0.8f, 1.0f}; // Light bluish-gray fog
+    // glClearColor(fogColor[0], fogColor[1], fogColor[2], fogColor[3]); // Match fog color
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
@@ -656,7 +747,7 @@ void resize(int width, int height)
     // 2. Aspect Ration
     // 3. Near
     // 4. Far
-    gluPerspective(45.0f, (GLdouble)width/(GLdouble)height, 0.1f, 100.0f);
+    gluPerspective(45.0f, (GLdouble)width/(GLdouble)height, 0.1f, 200.0f);
 
     // frustrun
     //double H = tan((45.0/2.0)/ 180*3.14)*0.1f;
@@ -669,6 +760,7 @@ void display(void)
 {
     // function declaration
     void drawScene1(void);
+    void drawScene2(void);
 
 
     //code
@@ -680,20 +772,90 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    if (scene1)
+    if (Scene1)
     {
         drawScene1();
     }
 
-    //gluLookAt(0.0f, 0.0f, 9.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    //gluLookAt(19.0f * sin(DEG_TO_RAD(cameraAngle)), 0.0f, 19.0f * cos(DEG_TO_RAD(cameraAngle)), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-
-
+    if (Scene2)
+    {
+        drawScene2();
+    }
 
     SwapBuffers(ghdc);
 }
 
 void drawScene1(void)
+{
+    void drawObj(DecodedObjModel* decodedObj);
+    void drawFog(void);
+
+    static int cameraPos = 0;
+
+    gluLookAt(scene1Camera[cameraPos].eyeX, scene1Camera[cameraPos].eyeY, scene1Camera[cameraPos].eyeZ,
+              scene1Camera[cameraPos].centerX, scene1Camera[cameraPos].centerY, scene1Camera[cameraPos].centerZ,
+              scene1Camera[cameraPos].upX, scene1Camera[cameraPos].upY, scene1Camera[cameraPos].upZ);
+
+
+    if (cameraPos < (scene1Camera.size() - 1))
+    {
+        cameraPos++;
+    }
+
+    //drawFog();
+    glPushMatrix();
+    glTranslatef(scene1RoomPos.x, scene1RoomPos.y, scene1RoomPos.z);
+    glScalef(0.5f, 0.5f, 0.5f); 
+    drawObj(&Office);
+    glPopMatrix();
+
+    glPushMatrix();
+    glTranslatef(scene1BookPos.x, scene1BookPos.y, scene1BookPos.z);
+    glScalef(0.12f, 0.12f, 0.12f); 
+    drawObj(&Fantasy);
+    glPopMatrix();
+}
+
+void drawFog(void)
+{
+    void drawCube(void);
+    glEnable(GL_FOG);
+    glFogi(GL_FOG_MODE, GL_LINEAR);
+
+    GLfloat fogColor[4] = {0.6f, 0.7f, 0.8f, 1.0f};
+    glFogfv(GL_FOG_COLOR, fogColor);
+
+    glFogf(GL_FOG_START, 10.0f);
+    glFogf(GL_FOG_END, 100.0f);
+
+    glHint(GL_FOG_HINT, GL_NICEST);
+
+
+     // Draw multiple cubes at different depths
+    for (int i = 0; i < 5; ++i) {
+        glPushMatrix();
+        glTranslatef((i - 2) * 2.5f, 0.0f, -i * 5.0f); // spread in Z
+        glColor3f(1.0f - 0.2f * i, 0.2f * i, 0.3f);    // varied colors
+        drawCube();
+        glPopMatrix();
+    }
+}
+
+void drawBridge(void)
+{
+    void drawObj(DecodedObjModel* decodedObj);
+    glPushMatrix();
+
+    // glTranslatef(BOY_POS_X, 0.0f, -1.0f);
+    glTranslatef(BOY_POS_X + 30.0f, BOY_POS_Y - 1.6f, BOY_POS_Z - 6.2f);
+    glScalef(1.0f, 1.0f, 1.2f); 
+    glRotatef(-17.0f, 0.0f, 1.0f, 0.0f);
+    drawObj(&Bridge);
+    glPopMatrix();
+}
+
+
+void drawScene2(void)
 {
     // function declaration
     void drawBoy(void);
@@ -703,15 +865,16 @@ void drawScene1(void)
     void drawDryLake(void);
     void drawTerrain(void);
     void drawTree(GLfloat x, GLfloat y, GLfloat z);
+    void drawBridge(void);
 
     // code 
     static int cameraPos = 0;
 
 
-    gluLookAt(scene1Camera[cameraPos].eyeX, scene1Camera[cameraPos].eyeY, scene1Camera[cameraPos].eyeZ,
-              scene1Camera[cameraPos].centerX, scene1Camera[cameraPos].centerY, scene1Camera[cameraPos].centerZ,
-              scene1Camera[cameraPos].upX, scene1Camera[cameraPos].upY, scene1Camera[cameraPos].upZ);
-    if (cameraPos < scene1Camera.size() - 1)
+    gluLookAt(scene2Camera[cameraPos].eyeX, scene2Camera[cameraPos].eyeY, scene2Camera[cameraPos].eyeZ,
+              scene2Camera[cameraPos].centerX, scene2Camera[cameraPos].centerY, scene2Camera[cameraPos].centerZ,
+              scene2Camera[cameraPos].upX, scene2Camera[cameraPos].upY, scene2Camera[cameraPos].upZ);
+    if (cameraPos < scene2Camera.size() - 1)
     {
         cameraPos++;
     }
@@ -728,6 +891,7 @@ void drawScene1(void)
     drawTerrain();
     drawTree(BOY_POS_X+1.0f, BOY_POS_Y, BOY_POS_Z+1.0f);
     drawTree(BOY_POS_X+1.0f, BOY_POS_Y - 1.0f, BOY_POS_Z+1.0f);
+    drawBridge();
 
 
 }
