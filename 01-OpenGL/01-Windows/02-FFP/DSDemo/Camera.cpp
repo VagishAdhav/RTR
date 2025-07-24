@@ -97,7 +97,7 @@ void cameraRotateX(std::vector<CameraPos> *CamPos, float angle, float speed)
         float deltaY = current.centerY - current.eyeY;
         float deltaZ = current.centerZ - current.eyeZ;
 
-        current.centerY = current.eyeX + (deltaY * cos(angle_rad) - deltaZ * sin(angle_rad));
+        current.centerY = current.eyeY + (deltaY * cos(angle_rad) - deltaZ * sin(angle_rad));
         current.centerZ = current.eyeZ + (deltaY * sin(angle_rad) + deltaZ * cos(angle_rad));
         CamPos->push_back(current);
     }
@@ -132,7 +132,7 @@ void cameraRotateZ(std::vector<CameraPos> *CamPos, float angle, float speed)
         float deltaY = current.centerY - current.eyeY;
 
         current.centerX = current.eyeX + (deltaX * cos(angle_rad) - deltaY * sin(angle_rad));
-        current.centerY = current.eyeZ + (deltaX * sin(angle_rad) + deltaY * cos(angle_rad));
+        current.centerY = current.eyeY + (deltaX * sin(angle_rad) + deltaY * cos(angle_rad));
         CamPos->push_back(current);
     }
 }
@@ -170,6 +170,7 @@ void cameraMove(std::vector<CameraPos> *CamPos, unsigned int direction, float di
             current.eyeY += speed;
         }
 
+        // TODO: This is wrong, we need a vector calculus here
         if (fixCenter == FALSE)
         {
             if (direction & (MOVE_FORWARD))
@@ -244,6 +245,15 @@ void cameraCurve(std::vector<CameraPos> *pos, float controlPoints[4][3], float s
                         3 * (1-t1) * pow(t1, 2) * controlPoints[2][2] +
                         pow(t1, 3) * controlPoints[3][2];   
         }
+        pos->push_back(tempPos);
+    }
+}
+
+void cameraFix(std::vector<CameraPos> *pos, unsigned int time)
+{
+    CameraPos tempPos = pos->back();
+    for (unsigned int index = 0; index < time; index++)
+    {
         pos->push_back(tempPos);
     }
 }

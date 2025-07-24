@@ -4,6 +4,10 @@
 #include "LSystemTree.h"
 #include "Camera.h"
 
+// for compressed transperent png load
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 // OpenGL related libraries
 #pragma comment(lib, "opengl32.lib") // Import library
 #pragma comment(lib, "glu32.lib") // Import library
@@ -90,7 +94,7 @@ GLdouble gldAngleCube = 0.0f;
 // light related variables
 GLfloat lightAmbient[] = {0.5f, 0.5f, 0.5f, 1.0f};
 GLfloat lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat lightPosition[] = {0.0f, 0.0f, 2.0f};
+GLfloat lightPosition[] = {0.0f, 38.0f, 50.0f};
 BOOL bLight = FALSE;
 
 // model related variables
@@ -115,6 +119,16 @@ GLuint textureDryLake;
 //  texture terrain
 GLuint textureTerrain;
 
+// texture for scene1 building visible through windiw
+GLuint textureStreetLamp;
+
+// texture for clock on the scene1 room
+GLuint textureClock;
+
+// texture for intro logo
+GLuint textureLogo;
+
+
 // Tree related variables
 LSystemTree *tree1 = NULL;
 LSystemTree *tree2 = NULL;
@@ -123,7 +137,7 @@ GLUquadric *trunkQuadric = NULL;
 GLuint textureTrunk, textureLeafs;
 
 
-// camera angle and scenes
+// camera, lights and transformation for scene1 and scenes
 
 BOOL Scene1 = FALSE;
 
@@ -255,7 +269,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLin
         }
         else
         {
-            //if(gbActiveWindow == TRUE)
+            if(gbActiveWindow == TRUE)
             {
                 if(gbEscKeyIsPressed == TRUE)
                 {
@@ -443,6 +457,7 @@ int initialise(void)
     void drawTrunk(float width, float length);
     void drawLeaf(float width, float length);
     BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int channels);
+    BOOL loadGLTexturePNG(const char* file, GLuint* texture);
 
     // variable declaration
     PIXELFORMATDESCRIPTOR pfd;
@@ -558,7 +573,8 @@ int initialise(void)
         fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_TERRAIN\n");
         return -12;
     }
-        // load textures
+    Terrain.texture = textureTerrain;
+
     if (loadGLTexture(&textureTrunk, MAKEINTRESOURCE(ID_BITMAP_TRUNK), 3) == FALSE)
     {
         fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_TRUNK\n");
@@ -595,25 +611,60 @@ int initialise(void)
 
     Office.texture = textureOffice; 
 
+    
+    if (loadGLTexture(&textureStreetLamp, MAKEINTRESOURCE(ID_BITMAP_STREET_LAMP), 3) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for ID_BITMAP_STREET_LAMP\n");
+        return -18;
+    }
+
+    if (loadGLTexturePNG(".\\Textures\\Logo.png", &textureLogo) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for Logo.png\n");
+        return -19;
+    }
+
+    if (loadGLTexturePNG(".\\Textures\\Clock.png", &textureClock) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for Clock.png\n");
+        return -19;
+    }
+
     // create tree object
     createTree(&tree1, 0.4f, 0.2f, 40.0f, 40.0f, FALSE, drawTrunk, drawLeaf);
 
-    Terrain.texture = textureTerrain;
-
-
     // setup camera for scene 1
     Scene1 = TRUE;
+    float scene1Speed = 0.5f;
+
     // create camera object
-    //cameraSet(&scene2Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+
+
     cameraSet(&scene1Camera, 0.0f, 35.0f, 50.0f, 0.0f, 35.0f, -100.0f, UP_Y);
-    cameraMove(&scene1Camera, (MOVE_FORWARD), 30.0f, 0.09f, TRUE);
-    cameraRotateY(&scene1Camera, 50.0f, 0.1f);
-    cameraRotateY(&scene1Camera, -50.0f, 0.1f);
-    cameraMove(&scene1Camera, (MOVE_FORWARD), 60.0f, 0.09f, TRUE);
-    cameraRotateY(&scene1Camera, 10.0f, 0.09f);
-    cameraRotateY(&scene1Camera, -10.0f, 0.09f);
-    cameraRotateY(&scene1Camera, -15.0f, 0.09f);
-    cameraMove(&scene1Camera, (MOVE_FORWARD | MOVE_LEFT), 2.0f, 0.09f, TRUE);
+    cameraFix(&scene1Camera, 10);
+    // rotate and show the logo
+    cameraMove(&scene1Camera, (MOVE_FORWARD), 30.0f, scene1Speed, TRUE);
+    cameraRotateY(&scene1Camera, -50.0f, scene1Speed);
+    cameraRotateY(&scene1Camera, 50.0f, scene1Speed);
+    // show the clock
+    cameraRotateY(&scene1Camera, 50.0f, scene1Speed);
+    cameraRotateY(&scene1Camera, -50.0f, scene1Speed);
+    // move towards table
+    cameraMove(&scene1Camera, (MOVE_FORWARD), 60.0f, scene1Speed, TRUE);
+    // rotate towards montitor
+    cameraRotateY(&scene1Camera, 10.0f, scene1Speed);
+    // wait for a while here
+    cameraFix(&scene1Camera, 10);
+    // back to table center
+    cameraRotateY(&scene1Camera, -10.0f, scene1Speed);
+
+   // rotate towards book
+    cameraRotateY(&scene1Camera, -35.0f, scene1Speed); 
+
+    //cameraSet(&scene1Camera, scene1Camera.back().eyeX, scene1Camera.back().eyeY, scene1Camera.back().eyeZ, scene1BookPos.x, scene1BookPos.y, scene1BookPos.z, UP_Y);
+    cameraMove(&scene1Camera, (MOVE_FORWARD), 10.0f, 0.05f, TRUE);
+    cameraRotateX(&scene1Camera, -40.0f, 0.09f);
+    cameraMove(&scene1Camera, (MOVE_FORWARD | MOVE_LEFT), 50.0f, 0.05f, TRUE);
 
     // setup camera for scene 2
     Scene2 = FALSE;
@@ -641,7 +692,7 @@ int initialise(void)
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
-    //glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT0);
 
     // enable texturing
     glEnable(GL_TEXTURE_2D);
@@ -684,7 +735,9 @@ BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int no_cha
 
     //code
     //load the bitmap as image
+
     hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL), imageResourceID, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+
     if (hBitmap)
     {
         bResult = TRUE;
@@ -721,6 +774,46 @@ BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int no_cha
         hBitmap = NULL;
     }
 
+    return bResult;
+}
+
+BOOL loadGLTexturePNG(const char* file, GLuint* texture)
+{
+    // variable declaration 
+    BOOL bResult = FALSE;
+    int width, height, no_channels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char* bmBits = stbi_load(file, &width, &height, &no_channels, STBI_rgb_alpha);
+    fprintf(gpFile,"Channels: %d\n", no_channels);  // Should be 4 (RGBA)
+    if (bmBits)
+    {
+        bResult = TRUE;
+        GLenum format = (no_channels == 4) ? GL_RGBA : GL_RGB;
+
+        // generate OpenGL texture object
+        glGenTextures(1, texture);
+        // bind to newly created texture object
+        glBindTexture(GL_TEXTURE_2D, *texture);
+        // set texture parameter
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+        // 1, binding point
+        // 2, no of components (3 colors)
+        // 3. width
+        // 4. height
+        // 5. format of image bata
+        // 6. type of bitmap data
+        //(glTexImage2D + glGeneratemimap)
+ 
+        gluBuild2DMipmaps(GL_TEXTURE_2D, no_channels, width, height, format, GL_UNSIGNED_BYTE, bmBits);
+
+        // unbind
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        // delete object
+        stbi_image_free(bmBits);
+    }
     return bResult;
 }
 
@@ -787,33 +880,76 @@ void display(void)
 
 void drawScene1(void)
 {
+    // function declaration
     void drawObj(DecodedObjModel* decodedObj);
-    void drawFog(void);
+    void drawQuadWithTexture(GLuint *texture, unsigned int repeat);
 
+    // variable declaration
     static int cameraPos = 0;
 
+    //code
     gluLookAt(scene1Camera[cameraPos].eyeX, scene1Camera[cameraPos].eyeY, scene1Camera[cameraPos].eyeZ,
               scene1Camera[cameraPos].centerX, scene1Camera[cameraPos].centerY, scene1Camera[cameraPos].centerZ,
               scene1Camera[cameraPos].upX, scene1Camera[cameraPos].upY, scene1Camera[cameraPos].upZ);
 
 
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
     if (cameraPos < (scene1Camera.size() - 1))
     {
         cameraPos++;
     }
 
-    //drawFog();
+    // Enable global lightinhg
+    //glEnable(GL_LIGHTING);
+
+    // Draw office setup
     glPushMatrix();
     glTranslatef(scene1RoomPos.x, scene1RoomPos.y, scene1RoomPos.z);
     glScalef(0.5f, 0.5f, 0.5f); 
     drawObj(&Office);
     glPopMatrix();
 
+    // Draw fantasy book, place it on table
     glPushMatrix();
     glTranslatef(scene1BookPos.x, scene1BookPos.y, scene1BookPos.z);
     glScalef(0.12f, 0.12f, 0.12f); 
     drawObj(&Fantasy);
     glPopMatrix();
+
+    // draw street lamp outside of the window
+    glPushMatrix();
+    glTranslatef(scene1BookPos.x + 25.0f, scene1BookPos.y + 13, scene1BookPos.z - 40.0f);
+    glScalef(20.0f, 15.0f, 20.0f); 
+    drawQuadWithTexture(&textureStreetLamp, 1);
+    glPopMatrix();
+
+    // draw intro logo
+    glPushMatrix();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glTranslatef(scene1RoomPos.x - 30.0f, scene1RoomPos.y + 35.0f, scene1RoomPos.z + 10.0f);
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+    glScalef(15.0f, 20.0f, 1.0f); 
+    drawQuadWithTexture(&textureLogo, 1);
+    glDisable(GL_BLEND);
+    glPopMatrix();
+
+    // Draw the wall clock texture
+
+    glPushMatrix();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glTranslatef(scene1RoomPos.x + 30.03f, scene1RoomPos.y + 45.2f, scene1RoomPos.z + 25.0f);
+    glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+    glScalef(8.5f, 8.5f, 1.0f); 
+    drawQuadWithTexture(&textureClock, 1);
+    glDisable(GL_BLEND);
+    glPopMatrix();
+
+    // draw wallpaper texture
+
+    // draw frame texture
+
 }
 
 void drawFog(void)

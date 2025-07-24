@@ -13,3 +13,4 @@ ID_BITMAP_LEAFS BITMAP .\Textures\leafs.bmp
 ID_BITMAP_BRIDGE BITMAP .\Textures\WoodBridge.bmp
 ID_BITMAP_FANTASY_BOOK BITMAP .\Textures\FantasyBook.bmp
 ID_BITMAP_OFFICE BITMAP .\Textures\Office.bmp
+ID_BITMAP_STREET_LAMP BITMAP .\Textures\StreetLamp.bmp

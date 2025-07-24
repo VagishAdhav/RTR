@@ -51,3 +51,5 @@ void cameraRotateZ(std::vector<CameraPos> *pos, float angle, float speed);
 void cameraMove(std::vector<CameraPos> *pos, unsigned int direction, float distance, float speed, BOOL fixCenter);
 
 void cameraCurve(std::vector<CameraPos> *pos, float controlPoints[4][3], float speed, BOOL fixCenter);
+
+void cameraFix(std::vector<CameraPos> *pos, unsigned int time);
