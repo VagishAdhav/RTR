@@ -8,10 +8,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+// media related includes and libraries
+#include <Mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
+
 // OpenGL related libraries
 #pragma comment(lib, "opengl32.lib") // Import library
 #pragma comment(lib, "glu32.lib") // Import library
-
 
 // OpenGL related global variables
 HDC ghdc = NULL;   // handle to device context
@@ -66,10 +70,32 @@ typedef struct
     GLuint texture;
 } DecodedObjModel;
 
+// secene4 textures
 GLuint textureBoy;
 GLuint textureBridge;
+GLuint texturePlatform; // wood platform related variables
+GLuint textureDryGrass; // grass related variables
+GLuint textureSideSky; //side sky related variables
+GLuint textureDryLake; // dry lake related variables
+GLuint textureTerrain; //  texture terrain
+
+//scene 1 textures
 GLuint textureFantasy;
 GLuint textureOffice;
+GLuint textureStreetLamp; // texture for scene1 building visible through windiw
+GLuint textureClock; // texture for clock on the scene1 room
+GLuint textureLogo; // texture for intro logo
+
+// scene 2 related textures
+GLuint textureFantasySun;
+
+// scene3 related textures
+GLuint textureSunHappy;
+GLuint textureSunAngry;
+GLuint textureSunScared;
+GLuint textureLandScapeNormal;
+GLuint textureLandScapeWater;
+GLuint textureCloud;
 
 // global variable declarations
 // variables related to fullscreen
@@ -77,6 +103,7 @@ BOOL gbFullScreen = FALSE;
 HWND ghwnd = NULL;
 DWORD dwStyle; // could have been local static
 WINDOWPLACEMENT wpPrev;
+
 
 //variables related to fileIO
 char gszLogFileName[] = "Log.txt";
@@ -91,10 +118,6 @@ BOOL gbEscKeyIsPressed = FALSE;
 // rotation angles
 GLdouble gldAngleCube = 0.0f;
 
-// light related variables
-GLfloat lightAmbient[] = {0.5f, 0.5f, 0.5f, 1.0f};
-GLfloat lightDiffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-GLfloat lightPosition[] = {0.0f, 38.0f, 50.0f};
 BOOL bLight = FALSE;
 
 // model related variables
@@ -103,31 +126,7 @@ DecodedObjModel Bridge = {0};
 DecodedObjModel Terrain = {0};
 DecodedObjModel Fantasy = {0};
 DecodedObjModel Office = {0};
-
-// wood platform related variables
-GLuint texturePlatform;
-
-// grass related variables
-GLuint textureDryGrass;
-
-//side sky related variables
-GLuint textureSideSky;
-
-// dry lake related variables
-GLuint textureDryLake;
-
-//  texture terrain
-GLuint textureTerrain;
-
-// texture for scene1 building visible through windiw
-GLuint textureStreetLamp;
-
-// texture for clock on the scene1 room
-GLuint textureClock;
-
-// texture for intro logo
-GLuint textureLogo;
-
+DecodedObjModel FantasySun = {0};
 
 // Tree related variables
 LSystemTree *tree1 = NULL;
@@ -136,33 +135,49 @@ GLfloat treeRotationY = 0.0f;
 GLUquadric *trunkQuadric = NULL;
 GLuint textureTrunk, textureLeafs;
 
-
-// camera, lights and transformation for scene1 and scenes
-
-BOOL Scene1 = FALSE;
-
-float controlPointsScene1[4][3] = {
-        {0.0f, 1.0f, 30.0f},
-        {25.0f, 1.0f, 20.0f},
-        {-25.0f, 1.0f, 10.0f},
-        {0.0f, 1.0f, 0.0f},
-        };
-
+// camera, lights and transformation for scene1 
+BOOL bScene1 = FALSE;
 Vertex scene1RoomPos = {1.0f, 0.0f, -25.0f};
 Vertex scene1BookPos = {-18.0f, 25.3f, -68.0f};
-
+float scene1CameraSpeed = 0.1f;
+float scene1TransitionOut = 1.0f;  
 std::vector<CameraPos> scene1Camera;
+GLfloat scene1LightAmbient[] = {0.5f, 0.5f, 0.5f, 1.0f};
+GLfloat scene1LightDiffuse[] = {0.5f, 0.5f, 0.5f, 1.0f};
+GLfloat scene1LightPosition[] = {0.0f, 35.0f, 50.0f, 1.0f};
 
-BOOL Scene2 = FALSE;
+// camera, lights and transformation for scene2
+BOOL bScene2 = FALSE;
+Vertex scene2BookPos = {0.0f, 0.0f, -30.0f};
+Vertex scene2SunPos = {0.0f, 20.0f, -70.0f};
+float scene2CameraSpeed = 0.2f;
+float scene2TransitionIn = 1.0f;
+std::vector<CameraPos> scene2Camera;
+GLfloat scene2LightAmbient[] = {0.2f, 0.2f, 0.2f, 1.0f};
+GLfloat scene2LightDiffuse[] = {1.0f, 1.0f, 0.9f, 1.0f};
+GLfloat scene2LightPosition[] = {-0.0f, 1.0f, 0.5f, 0.0f};
+GLfloat fogColor[4] = {0.6f, 0.7f, 0.8f, 1.0f};
 
-float controlPointsScene2[4][3] = {
+// camera, lights and transformation for scene3
+BOOL bScene3 = TRUE;
+float scene3FogDensity = 1.0f;
+Vertex scene3MountainPos = {-1.3f, -2.0f, -0.0f};
+Vertex scene3SunPos = {0.0f, 2.0f, -0.0f};
+Vertex scene3Landscape = {0.0f, 0.0f, -0.0f};
+float scene3CameraSpeed = 0.1f;
+std::vector<CameraPos> scene3Camera;
+
+
+BOOL Scene4 = FALSE;
+
+float controlPointsScene4[4][3] = {
         {0.0f, 1.0f, 30.0f},
         {25.0f, 1.0f, 20.0f},
         {-25.0f, 1.0f, 10.0f},
         {0.0f, 1.0f, 0.0f},
         };
 
-std::vector<CameraPos> scene2Camera;
+std::vector<CameraPos> scene4Camera;
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -339,7 +354,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
             case 'D':
             case 'd':
-                fprintf(gpFile, "x: %f, y: %f, z: %f\n", scene1Camera.back().eyeX, scene1Camera.back().eyeY, scene1Camera.back().eyeZ);
+                fprintf(gpFile, "x: %f, y: %f, z: %f\n", scene2Camera.back().eyeX, scene2Camera.back().eyeY, scene2Camera.back().eyeZ);
                 fflush(gpFile);
                 break;
             default:
@@ -525,6 +540,7 @@ int initialise(void)
     loadObj("./Models/WoodenBridge.obj", &Bridge);
     loadObj("./Models/FantasyBook.obj", &Fantasy);
     loadObj("./Models/Office.obj", &Office);
+    loadObj("./Models/FantasySun.obj", &FantasySun);
 
     //debugObj(&Fantasy);
 
@@ -627,57 +643,78 @@ int initialise(void)
     if (loadGLTexturePNG(".\\Textures\\Clock.png", &textureClock) == FALSE)
     {
         fprintf(gpFile, "loadGLTexture failed for Clock.png\n");
-        return -19;
+        return -20;
     }
 
-    // create tree object
+    if (loadGLTexturePNG(".\\Textures\\FantasySun.png", &textureFantasySun) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for FantasySun.png\n");
+        return -21;
+    }
+
+    FantasySun.texture = textureFantasySun;
+
+    if (loadGLTexturePNG(".\\Textures\\Sun1.png", &textureSunHappy) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for Sun1.png\n");
+        return -22;
+    }
+
+    if (loadGLTexturePNG(".\\Textures\\Sun2.png", &textureSunAngry) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for Sun2.png\n");
+        return -23;
+    }
+
+    if (loadGLTexturePNG(".\\Textures\\Sun3.png", &textureSunScared) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for Sun3.png\n");
+        return -24;
+    }
+
+    if (loadGLTexturePNG(".\\Textures\\Landscape.png", &textureLandScapeNormal) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for Landscape.png\n");
+        return -25;
+    }
+
+    if (loadGLTexturePNG(".\\Textures\\LandscapeWater.png", &textureLandScapeWater) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for LandscapeWater.png\n");
+        return -26;
+    }
+
+    if (loadGLTexturePNG(".\\Textures\\Cloud.png", &textureCloud) == FALSE)
+    {
+        fprintf(gpFile, "loadGLTexture failed for Cloud.png\n");
+        return -27;
+    }
+
+
+
+    // create tree for scene4
     createTree(&tree1, 0.4f, 0.2f, 40.0f, 40.0f, FALSE, drawTrunk, drawLeaf);
 
-    // setup camera for scene 1
-    Scene1 = TRUE;
-    float scene1Speed = 0.5f;
+    // setup camera
 
-    // create camera object
+    setScene1Camera(&scene1Camera, scene1CameraSpeed);
 
+    setScene2Camera(&scene2Camera, scene2CameraSpeed);
 
-    cameraSet(&scene1Camera, 0.0f, 35.0f, 50.0f, 0.0f, 35.0f, -100.0f, UP_Y);
-    cameraFix(&scene1Camera, 10);
-    // rotate and show the logo
-    cameraMove(&scene1Camera, (MOVE_FORWARD), 30.0f, scene1Speed, TRUE);
-    cameraRotateY(&scene1Camera, -50.0f, scene1Speed);
-    cameraRotateY(&scene1Camera, 50.0f, scene1Speed);
-    // show the clock
-    cameraRotateY(&scene1Camera, 50.0f, scene1Speed);
-    cameraRotateY(&scene1Camera, -50.0f, scene1Speed);
-    // move towards table
-    cameraMove(&scene1Camera, (MOVE_FORWARD), 60.0f, scene1Speed, TRUE);
-    // rotate towards montitor
-    cameraRotateY(&scene1Camera, 10.0f, scene1Speed);
-    // wait for a while here
-    cameraFix(&scene1Camera, 10);
-    // back to table center
-    cameraRotateY(&scene1Camera, -10.0f, scene1Speed);
-
-   // rotate towards book
-    cameraRotateY(&scene1Camera, -35.0f, scene1Speed); 
-
-    //cameraSet(&scene1Camera, scene1Camera.back().eyeX, scene1Camera.back().eyeY, scene1Camera.back().eyeZ, scene1BookPos.x, scene1BookPos.y, scene1BookPos.z, UP_Y);
-    cameraMove(&scene1Camera, (MOVE_FORWARD), 10.0f, 0.05f, TRUE);
-    cameraRotateX(&scene1Camera, -40.0f, 0.09f);
-    cameraMove(&scene1Camera, (MOVE_FORWARD | MOVE_LEFT), 50.0f, 0.05f, TRUE);
+    setScene3Camera(&scene3Camera, scene3CameraSpeed);
 
     // setup camera for scene 2
-    Scene2 = FALSE;
+    Scene4 = FALSE;
     // create camera object
-    //cameraSet(&scene2Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
-    cameraSet(&scene2Camera, 0.0f, 10.0f, 30.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    //cameraSet(&scene4Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    cameraSet(&scene4Camera, 0.0f, 10.0f, 30.0f, 0.0f, 0.0f, 0.0f, UP_Y);
     // move forward and down
-    cameraMove(&scene2Camera, (MOVE_DOWN | MOVE_FORWARD), 10.0f, 0.09f, TRUE);
-    cameraMove(&scene2Camera, (MOVE_FORWARD), 3.0f, 0.09f, TRUE);
+    cameraMove(&scene4Camera, (MOVE_DOWN | MOVE_FORWARD), 10.0f, 0.09f, TRUE);
+    cameraMove(&scene4Camera, (MOVE_FORWARD), 3.0f, 0.09f, TRUE);
     // now revolve around Y
-    cameraRevolvAroundY(&scene2Camera, 180.0f, 0.1f);
-    //cameraRotateX(&scene2Camera, 180.0f, 0.1f);
-    //cameraCurve(&scene2Camera, controlPointsScene2, 0.001f, FALSE);
+    cameraRevolvAroundY(&scene4Camera, 180.0f, 0.1f);
+    //cameraRotateX(&scene4Camera, 180.0f, 0.1f);
+    //cameraCurve(&scene4Camera, controlPointsScene4, 0.001f, FALSE);
 
     //from here onwards opengl code starts
 
@@ -689,10 +726,16 @@ int initialise(void)
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // whenever some shapes are deterioted due to prespective projection and depth, give them nicest appearance
 
     //Light configuration
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightAmbient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightDiffuse);
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, scene1LightAmbient);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, scene1LightDiffuse);
+    glLightfv(GL_LIGHT0, GL_POSITION, scene1LightPosition);
     glEnable(GL_LIGHT0);
+
+
+
+    // glEnable(GL_COLOR_MATERIAL);
+    // glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
     // enable texturing
     glEnable(GL_TEXTURE_2D);
@@ -704,9 +747,10 @@ int initialise(void)
     gluQuadricDrawStyle(trunkQuadric, GLU_FILL);  // Solid cylinder
 
 
-    // GLfloat fogColor[4] = {0.6f, 0.7f, 0.8f, 1.0f}; // Light bluish-gray fog
-    // glClearColor(fogColor[0], fogColor[1], fogColor[2], fogColor[3]); // Match fog color
+
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    PlaySound(TEXT("Aggobai-Dhaggobai.wav"), NULL, SND_ASYNC);
 
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
@@ -763,7 +807,7 @@ BOOL loadGLTexture(GLuint *texture, TCHAR imageResourceID[], unsigned int no_cha
         // 6. type of bitmap data
         //(glTexImage2D + glGeneratemimap)
  
-        gluBuild2DMipmaps(GL_TEXTURE_2D, no_channels, bmp.bmWidth, bmp.bmHeight, format, GL_UNSIGNED_BYTE, (void *)bmp.bmBits);
+        gluBuild2DMipmaps(GL_TEXTURE_2D, no_channels , bmp.bmWidth, bmp.bmHeight, format, GL_UNSIGNED_BYTE, (void *)bmp.bmBits);
 
         // unbind
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -806,7 +850,7 @@ BOOL loadGLTexturePNG(const char* file, GLuint* texture)
         // 6. type of bitmap data
         //(glTexImage2D + glGeneratemimap)
  
-        gluBuild2DMipmaps(GL_TEXTURE_2D, no_channels, width, height, format, GL_UNSIGNED_BYTE, bmBits);
+        gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, bmBits);
 
         // unbind
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -854,6 +898,8 @@ void display(void)
     // function declaration
     void drawScene1(void);
     void drawScene2(void);
+    void drawScene3(void);
+    void drawScene4(void);
 
 
     //code
@@ -865,14 +911,24 @@ void display(void)
     // set  to identity matrix
     glLoadIdentity();
 
-    if (Scene1)
+    if (bScene1)
     {
         drawScene1();
     }
 
-    if (Scene2)
+    if (bScene2)
     {
         drawScene2();
+    }
+
+    if (bScene3)
+    {
+        drawScene3();
+    }
+
+    if (Scene4)
+    {
+        drawScene4();
     }
 
     SwapBuffers(ghdc);
@@ -893,10 +949,35 @@ void drawScene1(void)
               scene1Camera[cameraPos].upX, scene1Camera[cameraPos].upY, scene1Camera[cameraPos].upZ);
 
 
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+    glLightfv(GL_LIGHT0, GL_POSITION, scene1LightPosition);
+
+
+    //glLightfv(GL_LIGHT2, GL_POSITION, scene1RightSpotPosition);
     if (cameraPos < (scene1Camera.size() - 1))
     {
         cameraPos++;
+    }
+    // scene1 complete now start transition to scene2 with fog effect
+    else if (scene1TransitionOut > 0.0f)
+    {
+        //setup scene2 light and fog
+        glLightfv(GL_LIGHT0, GL_AMBIENT, scene2LightAmbient);
+        glLightfv(GL_LIGHT0, GL_DIFFUSE, scene2LightDiffuse);
+
+        glEnable(GL_FOG);
+        glFogi(GL_FOG_MODE, GL_EXP);
+        glFogfv(GL_FOG_COLOR, fogColor);
+        glFogf(GL_FOG_DENSITY, 1 - scene1TransitionOut);
+        glHint(GL_FOG_HINT, GL_NICEST);
+
+        glClearColor(fogColor[0], fogColor[1], fogColor[2], fogColor[3]);
+
+        scene1TransitionOut -= scene1CameraSpeed * 0.1f;
+    }
+    else
+    {
+        bScene2 = TRUE;
+        bScene1 = FALSE;
     }
 
     // Enable global lightinhg
@@ -930,6 +1011,7 @@ void drawScene1(void)
     glTranslatef(scene1RoomPos.x - 30.0f, scene1RoomPos.y + 35.0f, scene1RoomPos.z + 10.0f);
     glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
     glScalef(15.0f, 20.0f, 1.0f); 
+    //glNormal3f(1.0f, 0.0f, 0.0f);
     drawQuadWithTexture(&textureLogo, 1);
     glDisable(GL_BLEND);
     glPopMatrix();
@@ -942,6 +1024,7 @@ void drawScene1(void)
     glTranslatef(scene1RoomPos.x + 30.03f, scene1RoomPos.y + 45.2f, scene1RoomPos.z + 25.0f);
     glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
     glScalef(8.5f, 8.5f, 1.0f); 
+
     drawQuadWithTexture(&textureClock, 1);
     glDisable(GL_BLEND);
     glPopMatrix();
@@ -952,30 +1035,134 @@ void drawScene1(void)
 
 }
 
-void drawFog(void)
+void drawScene2(void)
 {
-    void drawCube(void);
-    glEnable(GL_FOG);
-    glFogi(GL_FOG_MODE, GL_LINEAR);
+    // function declaration
+    void drawObj(DecodedObjModel* decodedObj);
+    void drawQuadWithTexture(GLuint *texture, unsigned int repeat);
+    void drawCircle(void);
 
-    GLfloat fogColor[4] = {0.6f, 0.7f, 0.8f, 1.0f};
-    glFogfv(GL_FOG_COLOR, fogColor);
+    // variable declaration
+    static int cameraPos = 0;
 
-    glFogf(GL_FOG_START, 10.0f);
-    glFogf(GL_FOG_END, 100.0f);
+    //code
+    gluLookAt(scene2Camera[cameraPos].eyeX, scene2Camera[cameraPos].eyeY, scene2Camera[cameraPos].eyeZ,
+              scene2Camera[cameraPos].centerX, scene2Camera[cameraPos].centerY, scene2Camera[cameraPos].centerZ,
+              scene2Camera[cameraPos].upX, scene2Camera[cameraPos].upY, scene2Camera[cameraPos].upZ);
 
-    glHint(GL_FOG_HINT, GL_NICEST);
+    glLightfv(GL_LIGHT0, GL_POSITION, scene2LightPosition);
 
+    glFogf(GL_FOG_DENSITY, 0.01f);
 
-     // Draw multiple cubes at different depths
-    for (int i = 0; i < 5; ++i) {
-        glPushMatrix();
-        glTranslatef((i - 2) * 2.5f, 0.0f, -i * 5.0f); // spread in Z
-        glColor3f(1.0f - 0.2f * i, 0.2f * i, 0.3f);    // varied colors
-        drawCube();
-        glPopMatrix();
+    if (cameraPos < (scene2Camera.size() - 1))
+    {
+        cameraPos++;
     }
+    else
+    {
+        bScene2 = FALSE;
+        bScene3 = TRUE;
+        glFogf(GL_FOG_DENSITY, 0.01f);
+        glDisable(GL_FOG);
+    }
+
+    // draw book
+    glPushMatrix();
+    glTranslatef(scene2BookPos.x, scene2BookPos.y, scene2BookPos.z);
+    drawObj(&FantasySun);
+    glPopMatrix();
+
+    // draw sun
+    // store the material settongs and restore after drawing finished
+
+    glPushAttrib(GL_LIGHTING_BIT);
+
+        // Set material for sun
+        GLfloat sunAmbient[]  = { 1.0f, 0.8f, 0.5f, 1.0f };
+        GLfloat sunDiffuse[]  = { 1.0f, 0.8f, 0.5f, 1.0f };
+        GLfloat sunSpecular[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+        GLfloat sunEmission[] = { 1.0f, 0.6f, 0.0f, 1.0f };
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, sunAmbient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, sunDiffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, sunSpecular);
+        glMaterialfv(GL_FRONT, GL_EMISSION, sunEmission);
+
+        glPushMatrix();
+            glTranslatef(scene2SunPos.x, scene2SunPos.y, scene2SunPos.z);
+            glScalef(5.0f, 5.0f, 5.0f);
+            drawCircle();
+        glPopMatrix();
+
+    glPopAttrib();
+
+
 }
+
+void drawScene3(void)
+{
+    // function declaration
+    void drawQuadWithTexture(GLuint *texture, unsigned int repeat);
+    void drawCloud(void);
+
+    // variable declaration
+    static int cameraPos = 0;
+    GLuint textureSun = textureSunHappy;
+    GLuint textureLandScape = textureLandScapeNormal;
+    
+
+    //code
+    gluLookAt(scene3Camera[cameraPos].eyeX, scene3Camera[cameraPos].eyeY, scene3Camera[cameraPos].eyeZ,
+              scene3Camera[cameraPos].centerX, scene3Camera[cameraPos].centerY, scene3Camera[cameraPos].centerZ,
+              scene3Camera[cameraPos].upX, scene3Camera[cameraPos].upY, scene3Camera[cameraPos].upZ);
+
+    glLightfv(GL_LIGHT0, GL_POSITION, scene2LightPosition);
+
+    if (cameraPos < (scene3Camera.size() - 1))
+    {
+        cameraPos++;
+    }
+
+    if (cameraPos > scene3Camera.size()* 0.6f)
+    {
+        textureSun = textureSunScared;
+        textureLandScape = textureLandScapeWater;
+    }
+    else if (cameraPos > scene3Camera.size() * 0.3f)
+    {
+        textureSun = textureSunAngry;
+    }
+
+    // draw landscape
+    glPushMatrix();
+    glTranslatef(scene3Landscape.x, scene3Landscape.y, scene3Landscape.z);
+    glScalef(8.0f, 4.0f, 1.0f);
+    drawQuadWithTexture(&textureLandScape, 1);
+    glPopMatrix();
+
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //draw Sun
+    glPushMatrix();
+    glTranslatef(scene3SunPos.x, scene3SunPos.y, scene3SunPos.z);
+    glScalef(1.0f, 1.0f, 1.0f);
+    drawQuadWithTexture(&textureSun, 1);
+    glPopMatrix();
+
+
+    //draw Cloud
+    glPushMatrix();
+    glTranslatef(scene3SunPos.x - 5.0f, scene3SunPos.y - 1.0f, scene3SunPos.z);
+    glScalef(1.0f, 1.2f, 1.0f);
+    drawQuadWithTexture(&textureCloud, 1);
+    glPopMatrix();
+    glDisable(GL_BLEND);
+
+}
+
+
+
 
 void drawBridge(void)
 {
@@ -991,7 +1178,7 @@ void drawBridge(void)
 }
 
 
-void drawScene2(void)
+void drawScene4(void)
 {
     // function declaration
     void drawBoy(void);
@@ -1007,10 +1194,10 @@ void drawScene2(void)
     static int cameraPos = 0;
 
 
-    gluLookAt(scene2Camera[cameraPos].eyeX, scene2Camera[cameraPos].eyeY, scene2Camera[cameraPos].eyeZ,
-              scene2Camera[cameraPos].centerX, scene2Camera[cameraPos].centerY, scene2Camera[cameraPos].centerZ,
-              scene2Camera[cameraPos].upX, scene2Camera[cameraPos].upY, scene2Camera[cameraPos].upZ);
-    if (cameraPos < scene2Camera.size() - 1)
+    gluLookAt(scene4Camera[cameraPos].eyeX, scene4Camera[cameraPos].eyeY, scene4Camera[cameraPos].eyeZ,
+              scene4Camera[cameraPos].centerX, scene4Camera[cameraPos].centerY, scene4Camera[cameraPos].centerZ,
+              scene4Camera[cameraPos].upX, scene4Camera[cameraPos].upY, scene4Camera[cameraPos].upZ);
+    if (cameraPos < scene4Camera.size() - 1)
     {
         cameraPos++;
     }

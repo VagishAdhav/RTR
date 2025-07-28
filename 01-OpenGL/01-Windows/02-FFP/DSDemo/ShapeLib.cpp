@@ -1,4 +1,6 @@
 #include "OGL.h"
+#define _USE_MATH_DEFINES (1)
+#include <math.h>
 
 GLfloat cubeTexcoords[] =
 {
@@ -341,4 +343,24 @@ void drawQuad(void)
         // bottom right
         glVertex3f(1.0f, -1.0f, 0.0f);
     glEnd();
+}
+
+void drawCircle(void)
+{
+    for (float fAngle = 0.0f; fAngle <= 2*M_PI; fAngle += 0.01f)
+    {
+        glBegin(GL_TRIANGLES);
+        // triangle top
+        glVertex3f(0.0f, 0.0f, 0.0f);
+
+        float fX = cos(fAngle);
+        float fY = sin(fAngle);
+
+        glVertex3f(fX, fY, 0.0f);
+        fX = cos(fAngle + 0.01f);
+        fY = sin(fAngle + 0.01f);
+
+        glVertex3f(fX, fY, 0.0f);
+        glEnd();
+    }
 }

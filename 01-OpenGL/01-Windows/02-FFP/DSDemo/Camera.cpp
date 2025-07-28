@@ -8,6 +8,7 @@
 
 #define DEG_TO_RAD(deg) ((deg) * M_PI / 180.0)
 
+
 void cameraSet(std::vector<CameraPos> *pos,
     float eyeX,
     float eyeY,
@@ -227,7 +228,7 @@ void cameraCurve(std::vector<CameraPos> *pos, float controlPoints[4][3], float s
                     pow(t, 3) * controlPoints[3][2];
 
         
-        if (fixCenter == false)
+        if (fixCenter == FALSE)
         {
             float t1 = t + speed;
             tempPos.centerX = pow((1-t1), 3) * controlPoints[0][0] +
@@ -256,4 +257,73 @@ void cameraFix(std::vector<CameraPos> *pos, unsigned int time)
     {
         pos->push_back(tempPos);
     }
+}
+
+// setup scene one camera
+void setScene1Camera(std::vector<CameraPos> *pos, float speed)
+{
+    
+    cameraSet(pos, 0.0f, 35.0f, 50.0f, 0.0f, 35.0f, -100.0f, UP_Y);
+    cameraFix(pos, 10);
+    // rotate and show the logo
+    cameraMove(pos, (MOVE_FORWARD), 30.0f, speed, TRUE);
+    cameraRotateY(pos, -50.0f, speed);
+    cameraRotateY(pos, 50.0f, speed);
+    // show the clock
+    cameraRotateY(pos, 50.0f, speed);
+    cameraRotateY(pos, -50.0f, speed);
+    // move towards table
+    cameraMove(pos, (MOVE_FORWARD), 60.0f, speed, TRUE);
+    // rotate towards montitor
+    cameraRotateY(pos, 10.0f, speed);
+    // wait for a while here
+    cameraFix(pos, 10);
+    // back to table center
+    cameraRotateY(pos, -10.0f, speed);
+
+   // rotate towards book
+    cameraRotateY(pos, -35.0f, speed); 
+
+    //cameraSet(pos, scene1Camera.back().eyeX, scene1Camera.back().eyeY, scene1Camera.back().eyeZ, scene1BookPos.x, scene1BookPos.y, scene1BookPos.z, UP_Y);
+    cameraMove(pos, (MOVE_FORWARD), 10.0f, speed, TRUE);
+    cameraRotateX(pos, -35.0f, 0.09f);
+    cameraMove(pos, (MOVE_FORWARD | MOVE_LEFT), 5.0f, speed, TRUE);
+
+}
+
+// setup scene one camera
+void setScene2Camera(std::vector<CameraPos> *pos, float speed)
+{
+
+    float controlPoints[4][3] = {
+        {0.0f, 10.0f, 40.0f},
+        {-30.0f, 10.0f, 20.0f},
+        {30.0f, 10.0f, -15.0f},
+        {0.0f, 25.0f, -40.0f},
+        };
+
+
+    cameraSet(pos, 0.0f, 50.0f, 70.0f, 0.0f, 5.0f, -100.0f, UP_Y);
+    cameraFix(pos, 10);
+    // rotate down
+    cameraRotateX(pos, -20.0f, speed);
+    // move downwards
+    cameraMove(pos, (MOVE_FORWARD | MOVE_DOWN), 30.0f, speed, TRUE);
+    cameraRotateX(pos, 18.0f, speed+0.1);
+    // fix for while
+    cameraFix(pos, 50);
+
+    cameraMove(pos, (MOVE_LEFT), 2.0f, speed, TRUE);
+    // bazier
+    cameraCurve(pos, controlPoints, 0.0005f, TRUE);
+
+    cameraRotateY(pos, 359.0f, speed + 0.2f);
+
+    cameraRotateX(pos, 10.0f, speed + 0.2f);
+}
+
+void setScene3Camera(std::vector<CameraPos> *pos, float speed)
+{
+    cameraSet(pos, 0.0f, 0.0f, 10.0f, 0.0f, 0.0f, -100.0f, UP_Y);
+    cameraFix(pos, 1000.0f);
 }

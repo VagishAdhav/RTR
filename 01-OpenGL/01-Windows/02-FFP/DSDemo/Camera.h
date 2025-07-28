@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+
 typedef struct 
 {
     float eyeX;
@@ -53,3 +54,9 @@ void cameraMove(std::vector<CameraPos> *pos, unsigned int direction, float dista
 void cameraCurve(std::vector<CameraPos> *pos, float controlPoints[4][3], float speed, BOOL fixCenter);
 
 void cameraFix(std::vector<CameraPos> *pos, unsigned int time);
+
+void setScene1Camera(std::vector<CameraPos> *pos, float speed);
+
+void setScene2Camera(std::vector<CameraPos> *pos, float speed);
+
+void setScene3Camera(std::vector<CameraPos> *pos, float speed);
