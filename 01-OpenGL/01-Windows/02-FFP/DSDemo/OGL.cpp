@@ -136,11 +136,11 @@ GLUquadric *trunkQuadric = NULL;
 GLuint textureTrunk, textureLeafs;
 
 // camera, lights and transformation for scene1 
-BOOL bScene1 = FALSE;
+BOOL bScene1 = TRUE;
 Vertex scene1RoomPos = {1.0f, 0.0f, -25.0f};
 Vertex scene1BookPos = {-18.0f, 25.3f, -68.0f};
-float scene1CameraSpeed = 0.1f;
-float scene1TransitionOut = 1.0f;  
+float scene1DurationMs = 60000.0f;
+float scene1TransitionOutMs = 3000.0f;  
 std::vector<CameraPos> scene1Camera;
 GLfloat scene1LightAmbient[] = {0.5f, 0.5f, 0.5f, 1.0f};
 GLfloat scene1LightDiffuse[] = {0.5f, 0.5f, 0.5f, 1.0f};
@@ -159,25 +159,32 @@ GLfloat scene2LightPosition[] = {-0.0f, 1.0f, 0.5f, 0.0f};
 GLfloat fogColor[4] = {0.6f, 0.7f, 0.8f, 1.0f};
 
 // camera, lights and transformation for scene3
-BOOL bScene3 = TRUE;
+BOOL bScene3 = FALSE;
 float scene3FogDensity = 1.0f;
 Vertex scene3MountainPos = {-1.3f, -2.0f, -0.0f};
-Vertex scene3SunPos = {0.0f, 2.0f, -0.0f};
+Vertex scene3SunPos = {0.0f, 3.0f, -0.0f};
 Vertex scene3Landscape = {0.0f, 0.0f, -0.0f};
 float scene3CameraSpeed = 0.1f;
+GLfloat scene3LightPosition[] = {-0.0f, 0.0f, 5.0f, 0.0f};
 std::vector<CameraPos> scene3Camera;
 
 
-BOOL Scene4 = FALSE;
-
-float controlPointsScene4[4][3] = {
-        {0.0f, 1.0f, 30.0f},
-        {25.0f, 1.0f, 20.0f},
-        {-25.0f, 1.0f, 10.0f},
-        {0.0f, 1.0f, 0.0f},
-        };
-
+BOOL bScene4 = FALSE;
 std::vector<CameraPos> scene4Camera;
+float scene4CameraSpeed = 0.1f;
+GLfloat scene4LightPosition[] = {-0.0f, 0.0f, 5.0f, 0.0f};
+
+//time to manage scene transitions in sync with song
+// Refer https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter
+// https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancefrequency
+
+
+
+
+LARGE_INTEGER lpFrequency;
+LARGE_INTEGER lpStartTime, lpCurrentTime;
+double timeMs = 0.0f;
+
 
 // entry point function
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPreInstance, LPSTR lpszCmdLine, int iCmdShow)
@@ -697,24 +704,18 @@ int initialise(void)
 
     // setup camera
 
-    setScene1Camera(&scene1Camera, scene1CameraSpeed);
+    setScene1Camera(&scene1Camera);
+
+    debugCamera(&scene1Camera, gpFile);
 
     setScene2Camera(&scene2Camera, scene2CameraSpeed);
 
     setScene3Camera(&scene3Camera, scene3CameraSpeed);
 
-    // setup camera for scene 2
-    Scene4 = FALSE;
-    // create camera object
-    //cameraSet(&scene4Camera, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
-    cameraSet(&scene4Camera, 0.0f, 10.0f, 30.0f, 0.0f, 0.0f, 0.0f, UP_Y);
-    // move forward and down
-    cameraMove(&scene4Camera, (MOVE_DOWN | MOVE_FORWARD), 10.0f, 0.09f, TRUE);
-    cameraMove(&scene4Camera, (MOVE_FORWARD), 3.0f, 0.09f, TRUE);
-    // now revolve around Y
-    cameraRevolvAroundY(&scene4Camera, 180.0f, 0.1f);
-    //cameraRotateX(&scene4Camera, 180.0f, 0.1f);
-    //cameraCurve(&scene4Camera, controlPointsScene4, 0.001f, FALSE);
+    setScene4Camera(&scene4Camera, scene4CameraSpeed);
+
+
+
 
     //from here onwards opengl code starts
 
@@ -750,10 +751,25 @@ int initialise(void)
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    PlaySound(TEXT("Aggobai-Dhaggobai.wav"), NULL, SND_ASYNC);
+
 
     // warm up resize
     resize(WIN_WIDTH, WIN_HEIGHT);
+
+    //start with full screen
+    ToggleFullScreen();
+    gbFullScreen = TRUE;
+
+    //enable lighting
+    bLight = TRUE;
+    glEnable(GL_LIGHTING);
+
+    //get start time and frequency
+    QueryPerformanceFrequency(&lpFrequency);
+    QueryPerformanceCounter(&lpStartTime);
+
+    //start the music    
+    PlaySound(TEXT("Aggobai-Dhaggobai.wav"), NULL, SND_ASYNC);
 
     return 0;
 }
@@ -926,7 +942,7 @@ void display(void)
         drawScene3();
     }
 
-    if (Scene4)
+    if (bScene4)
     {
         drawScene4();
     }
@@ -941,7 +957,13 @@ void drawScene1(void)
     void drawQuadWithTexture(GLuint *texture, unsigned int repeat);
 
     // variable declaration
-    static int cameraPos = 0;
+    int cameraPos = (int)(timeMs / (double)FRAME_RATE_MS);
+
+    //clamp to last frame
+    if (cameraPos >= scene1Camera.size())
+    {
+        cameraPos = scene1Camera.size() - 1;
+    }
 
     //code
     gluLookAt(scene1Camera[cameraPos].eyeX, scene1Camera[cameraPos].eyeY, scene1Camera[cameraPos].eyeZ,
@@ -953,13 +975,11 @@ void drawScene1(void)
 
 
     //glLightfv(GL_LIGHT2, GL_POSITION, scene1RightSpotPosition);
-    if (cameraPos < (scene1Camera.size() - 1))
-    {
-        cameraPos++;
-    }
+
     // scene1 complete now start transition to scene2 with fog effect
-    else if (scene1TransitionOut > 0.0f)
+    if (timeMs >= scene1DurationMs)
     {
+
         //setup scene2 light and fog
         glLightfv(GL_LIGHT0, GL_AMBIENT, scene2LightAmbient);
         glLightfv(GL_LIGHT0, GL_DIFFUSE, scene2LightDiffuse);
@@ -967,21 +987,20 @@ void drawScene1(void)
         glEnable(GL_FOG);
         glFogi(GL_FOG_MODE, GL_EXP);
         glFogfv(GL_FOG_COLOR, fogColor);
-        glFogf(GL_FOG_DENSITY, 1 - scene1TransitionOut);
+        glFogf(GL_FOG_DENSITY, (timeMs - scene1DurationMs) *0.05);
         glHint(GL_FOG_HINT, GL_NICEST);
 
         glClearColor(fogColor[0], fogColor[1], fogColor[2], fogColor[3]);
 
-        scene1TransitionOut -= scene1CameraSpeed * 0.1f;
     }
-    else
+    
+    if (timeMs > (scene1TransitionOutMs + scene1DurationMs))  
     {
         bScene2 = TRUE;
         bScene1 = FALSE;
+        //reset start time
+        QueryPerformanceCounter(&lpStartTime); 
     }
-
-    // Enable global lightinhg
-    //glEnable(GL_LIGHTING);
 
     // Draw office setup
     glPushMatrix();
@@ -1040,7 +1059,7 @@ void drawScene2(void)
     // function declaration
     void drawObj(DecodedObjModel* decodedObj);
     void drawQuadWithTexture(GLuint *texture, unsigned int repeat);
-    void drawCircle(void);
+    void drawCircle(float startAngle, float endAngle); 
 
     // variable declaration
     static int cameraPos = 0;
@@ -1052,7 +1071,7 @@ void drawScene2(void)
 
     glLightfv(GL_LIGHT0, GL_POSITION, scene2LightPosition);
 
-    glFogf(GL_FOG_DENSITY, 0.01f);
+    glFogf(GL_FOG_DENSITY, 0.03f);
 
     if (cameraPos < (scene2Camera.size() - 1))
     {
@@ -1064,6 +1083,8 @@ void drawScene2(void)
         bScene3 = TRUE;
         glFogf(GL_FOG_DENSITY, 0.01f);
         glDisable(GL_FOG);
+        glEnable(GL_COLOR_MATERIAL);
+        glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
     }
 
     // draw book
@@ -1091,7 +1112,7 @@ void drawScene2(void)
         glPushMatrix();
             glTranslatef(scene2SunPos.x, scene2SunPos.y, scene2SunPos.z);
             glScalef(5.0f, 5.0f, 5.0f);
-            drawCircle();
+            drawCircle(0.0f, 360.0f);
         glPopMatrix();
 
     glPopAttrib();
@@ -1103,12 +1124,17 @@ void drawScene3(void)
 {
     // function declaration
     void drawQuadWithTexture(GLuint *texture, unsigned int repeat);
-    void drawCloud(void);
+    void drawCloud(GLfloat offsetY, BOOL eyeOpen, BOOL mouthOpen);
 
     // variable declaration
     static int cameraPos = 0;
     GLuint textureSun = textureSunHappy;
     GLuint textureLandScape = textureLandScapeNormal;
+    BOOL cloudHappy = TRUE;
+    BOOL cloudEyeOpen = TRUE;
+    float cloudDirection = 1.0f;
+    static float cloudXOffset = 0.01f;
+    float cloudXStart = -7.0f;
     
 
     //code
@@ -1116,22 +1142,48 @@ void drawScene3(void)
               scene3Camera[cameraPos].centerX, scene3Camera[cameraPos].centerY, scene3Camera[cameraPos].centerZ,
               scene3Camera[cameraPos].upX, scene3Camera[cameraPos].upY, scene3Camera[cameraPos].upZ);
 
-    glLightfv(GL_LIGHT0, GL_POSITION, scene2LightPosition);
+    glLightfv(GL_LIGHT0, GL_POSITION, scene3LightPosition);
 
     if (cameraPos < (scene3Camera.size() - 1))
     {
         cameraPos++;
     }
+    else
+    {
+        bScene3 = FALSE;
+        bScene4 = TRUE;
+    }
 
-    if (cameraPos > scene3Camera.size()* 0.6f)
+    if (cameraPos > 15000)
     {
         textureSun = textureSunScared;
         textureLandScape = textureLandScapeWater;
     }
-    else if (cameraPos > scene3Camera.size() * 0.3f)
+    else if (cameraPos > 5000)
     {
         textureSun = textureSunAngry;
+        cloudEyeOpen = FALSE;
+        cloudHappy = FALSE;
+        cloudDirection = -1.0f;
     }
+
+    if (cameraPos > 7000)
+    {
+        cloudDirection = 1.0f;
+        cloudEyeOpen = TRUE;
+        cloudHappy = TRUE;
+    }
+
+    if (cameraPos < 20000)
+    {
+        cloudXOffset = cloudXOffset + (0.012f * cloudDirection);
+    }
+
+
+    fprintf(gpFile, "cloudXOffset : %f\n", cloudXOffset);
+    fflush(gpFile);
+
+
 
     // draw landscape
     glPushMatrix();
@@ -1153,14 +1205,112 @@ void drawScene3(void)
 
     //draw Cloud
     glPushMatrix();
-    glTranslatef(scene3SunPos.x - 5.0f, scene3SunPos.y - 1.0f, scene3SunPos.z);
-    glScalef(1.0f, 1.2f, 1.0f);
-    drawQuadWithTexture(&textureCloud, 1);
+    glTranslatef((cloudXStart + cloudXOffset), 2.0f, 0.0f);
+    drawCloud(0.0f, cloudEyeOpen, cloudHappy);
     glPopMatrix();
+
+    //spawn other clouds
+    if (cameraPos > scene3Camera.size() * 0.25)
+    {
+
+        glPushMatrix();
+        glTranslatef((cloudXStart + cloudXOffset - 2.0f), 0.0f, 0.0f);
+        drawCloud(0.0f, cloudEyeOpen, cloudHappy);
+        glPopMatrix();
+
+        
+        glPushMatrix();
+        glTranslatef((cloudXStart + cloudXOffset - 2.3f), 1.0f, 0.0f);
+        drawCloud(0.0f, cloudEyeOpen, cloudHappy);
+        glPopMatrix();
+
+                
+        glPushMatrix();
+        glTranslatef((cloudXStart + cloudXOffset - 1.0f), 1.4f, 0.0f);
+        drawCloud(0.0f, cloudEyeOpen, cloudHappy);
+        glPopMatrix();
+
+        glPushMatrix();
+        glTranslatef((cloudXStart + cloudXOffset - 1.3f), 2.4f, 0.0f);
+        drawCloud(0.0f, cloudEyeOpen, cloudHappy);
+        glPopMatrix();
+
+        glPushMatrix();
+        glTranslatef((cloudXStart + cloudXOffset - 1.3f), 2.4f, 0.0f);
+        drawCloud(0.0f, cloudEyeOpen, cloudHappy);
+        glPopMatrix();
+
+    }
+
     glDisable(GL_BLEND);
+
 
 }
 
+
+void drawCloud(GLfloat offsetY, BOOL eyeOpen, BOOL mouthOpen)
+{
+    //function declaration
+    void drawQuadWithTexture(GLuint *texture, unsigned int repeat);
+    void drawCircle(float startAngle, float endAngle); 
+    void drawCircleLine(float startAngle, float endAngle);
+
+    //code
+
+    glPushMatrix();
+    glScalef(1.0f, 0.9f, 1.0f);
+    drawQuadWithTexture(&textureCloud, 1);
+    glPopMatrix();
+
+    //draw Eyes
+    glPushMatrix();
+    glColor4f(0.0f, 0.0f, 0.0f, 0.3f); // Black
+    if (eyeOpen)
+    {
+        glScalef(0.11f, 0.11f, 1.0f);
+        glTranslatef(-1.9f, 0.0f, 0.0f);
+        drawCircle(0.0f, 360.0f);
+        glTranslatef(0.0f, 0.3f, 0.0f);
+        drawCircleLine(10.0f, 170.0f);
+        glTranslatef(3.2f, -0.3f, 0.0f);
+        drawCircle(0.0f, 360.0f);
+        glTranslatef(0.0f, 0.3f, 0.0f);
+        drawCircleLine(10.0f, 170.0f);
+    }
+    else
+    {
+        glScalef(0.15f, 0.15f, 1.0f);
+        glTranslatef(-1.9f, 0.0f, 0.0f);
+        glTranslatef(0.0f, 0.3f, 0.0f);
+        drawCircleLine(0.0f, 180.0f);
+        glTranslatef(3.2f, -0.3f, 0.0f);
+        glTranslatef(0.0f, 0.3f, 0.0f);
+        drawCircleLine(0.0f, 180.0f);
+
+    }
+
+    glPopMatrix();
+    // draw mouth
+    glPushMatrix();
+
+    if (mouthOpen)
+    {
+        glScalef(0.2f, 0.2f, 1.0f);
+        glTranslatef(0.0f, -1.0f, 0.0f);
+        drawCircle(190.0f, 350.0f);
+    }
+    else
+    {
+        glScalef(0.05f, 0.05f, 1.0f);
+        glTranslatef(0.0f, -1.2f, 0.0f);
+        drawCircleLine(0, 360.0f);
+    }
+
+
+
+    glPopMatrix();
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+}
 
 
 
@@ -1197,13 +1347,13 @@ void drawScene4(void)
     gluLookAt(scene4Camera[cameraPos].eyeX, scene4Camera[cameraPos].eyeY, scene4Camera[cameraPos].eyeZ,
               scene4Camera[cameraPos].centerX, scene4Camera[cameraPos].centerY, scene4Camera[cameraPos].centerZ,
               scene4Camera[cameraPos].upX, scene4Camera[cameraPos].upY, scene4Camera[cameraPos].upZ);
-    if (cameraPos < scene4Camera.size() - 1)
+    if (cameraPos >= scene4Camera.size() - 1)
     {
         cameraPos++;
     }
     else
     {
-        cameraPos = 0;
+        // do nothing, start credit scene
     }
 
     drawBoy();
@@ -1407,6 +1557,13 @@ void drawTrunk(float length, float width)
 void update(void)
 {
     //code
+    // determine ms elapsed since start of the music
+    QueryPerformanceCounter(&lpCurrentTime);
+    // lpCurrentTime.QuadPart - lpStartTime.QuadPart ==> How many ticks passed at lpFrequency.QuadPart
+    // (lpCurrentTime.QuadPart - lpStartTime.QuadPar)/lpFrequency.QuadPart <== samples/rate <== time in seconds
+    // multiple by 1000 to convert this to ms
+    timeMs = ((lpCurrentTime.QuadPart - lpStartTime.QuadPart) * 1000.0) / lpFrequency.QuadPart;
+
 }
 
 int loadObj(char *fileName, DecodedObjModel* decodedObj)

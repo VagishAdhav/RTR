@@ -1,6 +1,9 @@
 #pragma once
 #include <vector>
 
+#define FRAME_PER_SECONDS (30)
+
+#define FRAME_RATE_MS (33.33)
 
 typedef struct 
 {
@@ -55,8 +58,13 @@ void cameraCurve(std::vector<CameraPos> *pos, float controlPoints[4][3], float s
 
 void cameraFix(std::vector<CameraPos> *pos, unsigned int time);
 
-void setScene1Camera(std::vector<CameraPos> *pos, float speed);
+void setScene1Camera(std::vector<CameraPos> *pos);
 
 void setScene2Camera(std::vector<CameraPos> *pos, float speed);
 
 void setScene3Camera(std::vector<CameraPos> *pos, float speed);
+
+void setScene4Camera(std::vector<CameraPos> *pos, float speed);
+
+
+void debugCamera(std::vector<CameraPos> *pos, FILE* gpFile);

@@ -2,6 +2,8 @@
 #define _USE_MATH_DEFINES (1)
 #include <math.h>
 
+#define DEG_TO_RAD(deg) ((deg) * M_PI / 180.0)
+
 GLfloat cubeTexcoords[] =
 {
 	// front
@@ -345,22 +347,36 @@ void drawQuad(void)
     glEnd();
 }
 
-void drawCircle(void)
+void drawCircle(float startAngle, float endAngle)
 {
-    for (float fAngle = 0.0f; fAngle <= 2*M_PI; fAngle += 0.01f)
+    for (float fAngle = startAngle; fAngle <= endAngle; fAngle += 0.01f)
     {
+        float angle = DEG_TO_RAD(fAngle);
         glBegin(GL_TRIANGLES);
         // triangle top
         glVertex3f(0.0f, 0.0f, 0.0f);
 
-        float fX = cos(fAngle);
-        float fY = sin(fAngle);
+        float fX = cos(angle);
+        float fY = sin(angle);
 
         glVertex3f(fX, fY, 0.0f);
-        fX = cos(fAngle + 0.01f);
-        fY = sin(fAngle + 0.01f);
+        fX = cos(angle + 0.01f);
+        fY = sin(angle + 0.01f);
 
         glVertex3f(fX, fY, 0.0f);
         glEnd();
     }
+}
+
+void drawCircleLine(float startAngle, float endAngle)
+{
+    glBegin(GL_LINE_LOOP);
+    for (float fAngle = startAngle; fAngle <= endAngle; fAngle += 0.01f)
+    {
+        float angle = DEG_TO_RAD(fAngle);
+        float fX = cos(angle);
+        float fY = sin(angle);
+        glVertex3f(fX, fY, 0.0f);
+    }
+    glEnd();
 }

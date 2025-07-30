@@ -8,6 +8,10 @@
 
 #define DEG_TO_RAD(deg) ((deg) * M_PI / 180.0)
 
+#define MS_TO_SAMPLES(ms) (((double)ms)/(double)FRAME_RATE_MS)
+
+#define MS_TO_SPEED(ms) ((double)(FRAME_PER_SECONDS) / MS_TO_SAMPLES(ms))
+
 
 void cameraSet(std::vector<CameraPos> *pos,
     float eyeX,
@@ -140,7 +144,7 @@ void cameraRotateZ(std::vector<CameraPos> *CamPos, float angle, float speed)
 
 void cameraMove(std::vector<CameraPos> *CamPos, unsigned int direction, float distance, float speed, BOOL fixCenter)
 {
-    for (float step = 0.0f; step <= distance; step += speed)
+    for (double step = 0.0f; step <= distance; step += speed)
     {
         CameraPos current = CamPos->back();
 
@@ -259,36 +263,54 @@ void cameraFix(std::vector<CameraPos> *pos, unsigned int time)
     }
 }
 
+void debugCamera(std::vector<CameraPos> *pos, FILE* gpFile)
+{
+    for (unsigned int index = 0; index < pos->size(); index++)
+    {
+        fprintf(gpFile, "Index : %d, eyeX:%f, eyeY:%f, eyeZ:%f\n", index, pos->at(index).eyeX, pos->at(index).eyeY, pos->at(index).eyeZ);
+    }
+}
+
 // setup scene one camera
-void setScene1Camera(std::vector<CameraPos> *pos, float speed)
+void setScene1Camera(std::vector<CameraPos> *pos)
 {
     
+
+    // total duration of first frame is 1 minute (60,000ms)
+    //setup camera position
     cameraSet(pos, 0.0f, 35.0f, 50.0f, 0.0f, 35.0f, -100.0f, UP_Y);
-    cameraFix(pos, 10);
-    // rotate and show the logo
-    cameraMove(pos, (MOVE_FORWARD), 30.0f, speed, TRUE);
-    cameraRotateY(pos, -50.0f, speed);
-    cameraRotateY(pos, 50.0f, speed);
-    // show the clock
-    cameraRotateY(pos, 50.0f, speed);
-    cameraRotateY(pos, -50.0f, speed);
-    // move towards table
-    cameraMove(pos, (MOVE_FORWARD), 60.0f, speed, TRUE);
-    // rotate towards montitor
-    cameraRotateY(pos, 10.0f, speed);
-    // wait for a while here
-    cameraFix(pos, 10);
-    // back to table center
-    cameraRotateY(pos, -10.0f, speed);
 
-   // rotate towards book
-    cameraRotateY(pos, -35.0f, speed); 
+    // fix at starting position for 2000ms
+    cameraFix(pos, MS_TO_SPEED(2000.0f));
 
-    //cameraSet(pos, scene1Camera.back().eyeX, scene1Camera.back().eyeY, scene1Camera.back().eyeZ, scene1BookPos.x, scene1BookPos.y, scene1BookPos.z, UP_Y);
-    cameraMove(pos, (MOVE_FORWARD), 10.0f, speed, TRUE);
-    cameraRotateX(pos, -35.0f, 0.09f);
-    cameraMove(pos, (MOVE_FORWARD | MOVE_LEFT), 5.0f, speed, TRUE);
+    //move forward 5000ms (//elapsed 7000)
+    cameraMove(pos, (MOVE_FORWARD), 30.0f, MS_TO_SPEED(5000.0f), TRUE);
 
+    // rotate couner clockwise and show the logo 5 seconds (//elapsed 12000)
+    cameraRotateY(pos, -50.0f, MS_TO_SPEED(5000.0f));
+    // rotate back to ceneter (//elapsed 17000)
+    cameraRotateY(pos, 50.0f, MS_TO_SPEED(5000.0f));
+    // show the clock (//elapsed 25000)
+    cameraRotateY(pos, 50.0f, MS_TO_SPEED(4000.0f));
+    cameraRotateY(pos, -50.0f, MS_TO_SPEED(4000.0f));
+    // move towards table (//elapsed 33000)
+    cameraMove(pos, (MOVE_FORWARD), 60.0f, MS_TO_SPEED(8000.0f), TRUE);
+    // rotate towards montitor // elapsed 36000
+    cameraRotateY(pos, 10.0f, MS_TO_SPEED(3000.0f));
+    // wait for 2 seconds here  // elapsed 38000
+    cameraFix(pos, MS_TO_SPEED(2000.0f));
+    // back to table center // // elapsed 41000
+    cameraRotateY(pos, -10.0f, MS_TO_SPEED(3000.0f));
+
+   // rotate towards book // elapsed 45000
+    cameraRotateY(pos, -35.0f, MS_TO_SPEED(3000.0f)); 
+
+   // move forward // elapsed 49000
+    cameraMove(pos, (MOVE_FORWARD), 10.0f, MS_TO_SPEED(4000.0f), TRUE);
+    // rotate down towards book //elapsed 54000
+    cameraRotateX(pos, -35.0f, MS_TO_SPEED(5000.0f));
+    // rotate down towards book //elapsed 60000
+    cameraMove(pos, (MOVE_FORWARD | MOVE_LEFT), 5.0f, MS_TO_SPEED(5900.0f), TRUE);
 }
 
 // setup scene one camera
@@ -325,5 +347,20 @@ void setScene2Camera(std::vector<CameraPos> *pos, float speed)
 void setScene3Camera(std::vector<CameraPos> *pos, float speed)
 {
     cameraSet(pos, 0.0f, 0.0f, 10.0f, 0.0f, 0.0f, -100.0f, UP_Y);
-    cameraFix(pos, 1000.0f);
+    cameraFix(pos, 2000.0f);
 }
+
+void setScene4Camera(std::vector<CameraPos> *pos, float speed)
+{
+    // create camera object
+    //cameraSet(pos, 0.0f, 1.0f, 5.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    cameraSet(pos, 0.0f, 10.0f, 30.0f, 0.0f, 0.0f, 0.0f, UP_Y);
+    // move forward and down
+    cameraMove(pos, (MOVE_DOWN | MOVE_FORWARD), 10.0f, 0.09f, TRUE);
+    cameraMove(pos, (MOVE_FORWARD), 3.0f, 0.09f, TRUE);
+    // now revolve around Y
+    cameraRevolvAroundY(pos, 180.0f, 0.1f);
+    //cameraRotateX(pos, 180.0f, 0.1f);
+    //cameraCurve(pos, controlPointsScene4, 0.001f, FALSE);
+}
+
